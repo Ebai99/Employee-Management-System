@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Manager Dashboard</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../assets/css/base.css" />
+    <link rel="stylesheet" href="../assets/css/components.css" />
+    <link rel="stylesheet" href="../assets/css/animations.css" />
+    <link rel="stylesheet" href="../assets/css/dashboard.css" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="layout">
+      <nav class="sidebar">
+        <h2>Manager Panel</h2>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="#">My Team</a>
+        <a href="#">Reports</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+
+      <main class="content">
+        <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+
+        <section class="dashboard fade-in">
+          <h1>Manager Dashboard</h1>
+          <p style="margin-bottom: 20px; color: #6b7280">
+            Overview of your team performance
+          </p>
+
+          <!-- KPI CARDS -->
+          <div class="cards">
+            <div class="card">
+              <h4>Team Members</h4>
+              <strong id="teamCount">0</strong>
+            </div>
+            <div class="card">
+              <h4>Tasks Completed (Week)</h4>
+              <strong id="tasksCompleted">0</strong>
+            </div>
+            <div class="card">
+              <h4>Avg Productivity</h4>
+              <strong id="avgProductivity">0%</strong>
+            </div>
+          </div>
+
+          <!-- CHART -->
+          <div class="card" style="margin-top: 30px">
+            <h3>Team Performance</h3>
+            <canvas id="teamChart" height="120"></canvas>
+          </div>
+
+          <!-- TEAM TABLE -->
+          <div class="card" style="margin-top: 30px">
+            <h3>My Team</h3>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee Code</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="teamTable"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/ui.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+    <script>
+      (async function loadManagerDashboard() {
+        const teamRes = await apiRequest("/manager/team");
+
+        if (!teamRes.success) {
+          showToast("Failed to load team data");
+          return;
+        }
+
+        const team = teamRes.data;
+
+        document.getElementById("teamCount").textContent = team.length;
+
+        const tbody = document.getElementById("teamTable");
+        tbody.innerHTML = "";
+
+        team.forEach((emp) => {
+          tbody.innerHTML += `
+      <tr>
+        <td>${emp.employee_code}</td>
+        <td>${emp.firstname} ${emp.lastname}</td>
+        <td>${emp.email}</td>
+        <td>${emp.status}</td>
+      </tr>
+    `;
+        });
+
+        // Chart
+        new Chart(document.getElementById("teamChart"), {
+          type: "line",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+            datasets: [
+              {
+                label: "Productivity %",
+                data: [72, 78, 80, 85, 88],
+                borderWidth: 3,
+                tension: 0.4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            animation: { duration: 1200 },
+          },
+        });
+      })();
+    </script>
+  </body>
+</html>

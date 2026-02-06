@@ -2,36 +2,99 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Employee Management System</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <title>Employee Management System | Login</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/components.css" />
+    <link rel="stylesheet" href="assets/css/animations.css" />
+
+    <style>
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: white;
+        padding: 32px;
+        border-radius: 18px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+      }
+
+      .login-card h1 {
+        margin-bottom: 8px;
+        font-size: 26px;
+      }
+
+      .login-card p {
+        margin-bottom: 24px;
+        color: #6b7280;
+      }
+
+      .login-card input,
+      .login-card select {
+        width: 100%;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 15px;
+      }
+
+      .login-card input:focus,
+      .login-card select:focus {
+        outline: none;
+        border-color: #6366f1;
+      }
+
+      .login-card button {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .brand {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #4f46e5;
+        letter-spacing: 1px;
+      }
+    </style>
   </head>
   <body>
-    <div class="login-container">
-      <h2>EMS Login</h2>
-      <form id="loginForm">
-        <input
-          type="text"
-          id="employeeCode"
-          placeholder="Employee Code"
-          required
-        />
-        <input
-          type="password"
-          id="accessCode"
-          placeholder="Access Code"
-          required
-        />
-        <select id="role">
-          <option value="employee">Employee</option>
-          <option value="manager">Manager</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button type="submit">Login</button>
-      </form>
-      <div id="loginError" class="error"></div>
+    <div class="login-card fade-in">
+      <div class="brand">EMPLOYEE SYSTEM</div>
+
+      <h1>Welcome Back</h1>
+      <p>Sign in to continue</p>
+
+      <div id="loginError" style="color: #dc2626; margin-bottom: 12px; font-size: 14px; display: none;"></div>
+
+      <select id="role">
+        <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
+        <option value="employee">Employee</option>
+      </select>
+
+      <input type="text" id="identifier" placeholder="Email or Employee Code" />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password / Access Code"
+      />
+
+      <button class="btn" onclick="login()">Login</button>
     </div>
 
-    <script src="js/auth.js"></script>
+    <!-- Scripts -->
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/ui.js"></script>
+    <script src="assets/js/auth.js"></script>
   </body>
 </html>

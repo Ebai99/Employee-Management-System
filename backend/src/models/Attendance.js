@@ -1,5 +1,4 @@
 const { query } = require("../utils/db.helper");
-const db = require("../config/db");
 
 class Attendance {
   static async clockIn(employeeId) {

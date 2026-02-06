@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Employee Dashboard</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../assets/css/base.css" />
+    <link rel="stylesheet" href="../assets/css/components.css" />
+    <link rel="stylesheet" href="../assets/css/animations.css" />
+    <link rel="stylesheet" href="../assets/css/dashboard.css" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="layout">
+      <nav class="sidebar">
+        <h2>Employee</h2>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="#">Attendance</a>
+        <a href="#">Tasks</a>
+        <a href="#">Reports</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+
+      <main class="content">
+        <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+
+        <section class="dashboard fade-in">
+          <h1>My Dashboard</h1>
+          <p style="margin-bottom: 20px; color: #6b7280">
+            Your personal performance summary
+          </p>
+
+          <!-- KPI CARDS -->
+          <div class="cards">
+            <div class="card">
+              <h4>Hours Worked (Week)</h4>
+              <strong id="hoursWorked">0</strong>
+            </div>
+            <div class="card">
+              <h4>Tasks Completed</h4>
+              <strong id="tasksDone">0</strong>
+            </div>
+            <div class="card">
+              <h4>Efficiency</h4>
+              <strong id="efficiency">0%</strong>
+            </div>
+          </div>
+
+          <!-- ATTENDANCE CHART -->
+          <div class="card" style="margin-top: 30px">
+            <h3>Attendance Hours</h3>
+            <canvas id="attendanceChart" height="120"></canvas>
+          </div>
+
+          <!-- TASK PERFORMANCE CHART -->
+          <div class="card" style="margin-top: 30px">
+            <h3>Task Performance</h3>
+            <canvas id="taskChart" height="120"></canvas>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/ui.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+    <script>
+      (async function loadEmployeeDashboard() {
+        const res = await apiRequest("/employee/dashboard");
+
+        if (!res.success) {
+          showToast("Unable to load dashboard");
+          return;
+        }
+
+        document.getElementById("hoursWorked").textContent = res.data.hours;
+        document.getElementById("tasksDone").textContent = res.data.tasks;
+        document.getElementById("efficiency").textContent =
+          res.data.efficiency + "%";
+
+        new Chart(document.getElementById("attendanceChart"), {
+          type: "bar",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+            datasets: [
+              {
+                label: "Hours",
+                data: [8, 7.5, 8, 6, 7],
+                borderWidth: 1,
+              },
+            ],
+          },
+        });
+
+        new Chart(document.getElementById("taskChart"), {
+          type: "doughnut",
+          data: {
+            labels: ["Completed", "Pending"],
+            datasets: [
+              {
+                data: [res.data.tasks, 5],
+              },
+            ],
+          },
+        });
+      })();
+    </script>
+  </body>
+</html>

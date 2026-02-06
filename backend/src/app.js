@@ -43,6 +43,10 @@ runDailyMetrics();
 
 app.use("/api/export", require("./routes/export.routes"));
 
+app.use("/api/manager", require("./routes/manager.routes"));
+
+app.use("/api/audit", require("./routes/audit.routes"));
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Employee Management API running" });

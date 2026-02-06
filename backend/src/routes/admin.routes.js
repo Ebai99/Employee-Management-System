@@ -3,6 +3,7 @@ const auth = require("../middleware/auth.middleware");
 const role = require("../middleware/role.middleware");
 const { createEmployeeValidator } = require("../validators/employee.validator");
 const AdminController = require("../controllers/admin.controller");
+const audit = require("../middleware/audit.middleware");
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.post(
   "/employees",
   auth,
   role("ADMIN", "SUPER_ADMIN"),
+  audit("CREATE_EMPLOYEE", "employee"),
   createEmployeeValidator,
   (req, res, next) => AdminController.createEmployee(req, res, next),
 );
@@ -43,6 +45,7 @@ router.post(
   "/assign-manager",
   auth,
   role("ADMIN", "SUPER_ADMIN"),
+  audit("ASSIGN_MANAGER", "employee"),
   (req, res, next) => AdminController.assignManager(req, res, next),
 );
 

@@ -7,6 +7,18 @@ const { query } = require("../utils/db.helper");
     const password = "Admin@123"; // change later
     const passwordHash = await hashPassword(password);
 
+    // Check if admin already exists
+    const existingAdmin = await query(`SELECT id FROM admins WHERE email = ?`, [
+      "admin@company.com",
+    ]);
+
+    if (existingAdmin && existingAdmin.length > 0) {
+      console.log("✅ Admin account already exists");
+      console.log("Login email: admin@company.com");
+      console.log("Login password:", password);
+      process.exit(0);
+    }
+
     await query(
       `INSERT INTO admins (name, email, password_hash, role) VALUES (?, ?, ?, ?)`,
       ["System Admin", "admin@company.com", passwordHash, "SUPER_ADMIN"],

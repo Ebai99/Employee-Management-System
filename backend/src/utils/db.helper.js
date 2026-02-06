@@ -5,4 +5,8 @@ const query = async (sql, params = []) => {
   return rows;
 };
 
-module.exports = { query };
+const execute = async (sql, params = []) => {
+  return await pool.execute(sql, params);
+};
+
+module.exports = { query, execute };

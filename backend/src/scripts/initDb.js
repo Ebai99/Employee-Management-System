@@ -8,6 +8,9 @@ async function initDatabase() {
     const schemaPath = path.join(__dirname, "../../../database/schema.sql");
     const schema = fs.readFileSync(schemaPath, "utf8");
 
+    // Disable foreign key checks to allow dropping tables
+    await db.execute("SET FOREIGN_KEY_CHECKS = 0");
+
     // Drop tables first to ensure clean slate
     const dropStatements = [
       "DROP TABLE IF EXISTS activity_logs",
@@ -17,8 +20,11 @@ async function initDatabase() {
 
     for (const statement of dropStatements) {
       console.log(`Executing: ${statement}`);
-      await db.query(statement);
+      await db.execute(statement);
     }
+
+    // Re-enable foreign key checks
+    await db.execute("SET FOREIGN_KEY_CHECKS = 1");
 
     // Split by semicolon and filter empty statements
     const statements = schema
@@ -30,7 +36,7 @@ async function initDatabase() {
 
     for (const statement of statements) {
       console.log(`Executing: ${statement.substring(0, 50)}...`);
-      await db.query(statement);
+      await db.execute(statement);
     }
 
     console.log("✓ Database initialized successfully!");

@@ -1,5 +1,0 @@
-function renderLineChart(ctxId, labels, data, label) { const ctx =
-document.getElementById(ctxId).getContext("2d"); new Chart(ctx, { type: "line",
-data: { labels, datasets: [{ label, data, backgroundColor: "rgba(54, 162, 235,
-0.2)", borderColor: "rgba(54, 162, 235, 1)", borderWidth: 2, fill: true, }] },
-options: { responsive: true, scales: { y: { beginAtZero: true } } } }); }
