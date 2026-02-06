@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Management System</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>EMS Login</h2>
+      <form id="loginForm">
+        <input
+          type="text"
+          id="employeeCode"
+          placeholder="Employee Code"
+          required
+        />
+        <input
+          type="password"
+          id="accessCode"
+          placeholder="Access Code"
+          required
+        />
+        <select id="role">
+          <option value="employee">Employee</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Login</button>
+      </form>
+      <div id="loginError" class="error"></div>
+    </div>
+
+    <script src="js/auth.js"></script>
+  </body>
+</html>
