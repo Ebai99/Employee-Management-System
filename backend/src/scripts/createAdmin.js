@@ -20,8 +20,9 @@ const { query } = require("../utils/db.helper");
     }
 
     await query(
-      `INSERT INTO admins (name, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-      ["System Admin", "admin@company.com", passwordHash, "SUPER_ADMIN"],
+      `INSERT INTO admins (name, email, password_hash, role, is_active)
+       VALUES (?, ?, ?, ?, ?)`,
+      ["System Admin", "admin@company.com", passwordHash, "SUPER_ADMIN", true],
     );
 
     console.log("✅ Admin created successfully");

@@ -12,68 +12,83 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function login() {
-  const identifier = document.getElementById("identifier").value || "";
-  const password = document.getElementById("password").value || "";
+  const identifier = document.getElementById("identifier").value.trim();
+  const password = document.getElementById("password").value;
   const role = document.getElementById("role").value;
+  console.log(role);
   const loginError = document.getElementById("loginError");
 
-  // Clear previous errors
-  if (loginError) {
-    loginError.textContent = "";
-    loginError.style.display = "none";
-  }
+  loginError.style.display = "none";
 
   if (!identifier || !password) {
-    if (loginError) {
-      loginError.textContent = "Please fill in all fields";
-      loginError.style.display = "block";
-    }
+    loginError.textContent = "All fields are required";
+    loginError.style.display = "block";
     return;
   }
 
-  const endpoint =
-    role === "admin" ? "/api/auth/admin/login" : "/api/auth/employee/login";
+  let endpoint, bodyData;
 
-  // Build request body based on role
-  let bodyData = {};
-  if (role === "admin") {
-    bodyData = {
-      email: identifier,
-      password: password,
-    };
+  if (role === "ADMIN") {
+    endpoint = "/auth/admin/login";
+    bodyData = { email: identifier, password };
+  } else if (role === "MANAGER") {
+    endpoint = "/auth/manager/login";
+    bodyData = { email: identifier, password };
+  } else if (role === "EMPLOYEE") {
+    endpoint = "/auth/employee/login";
+    bodyData = { employee_code: identifier, access_code: password };
   } else {
-    bodyData = {
-      employee_code: identifier,
-      access_code: password,
-    };
+    throw new Error("Invalid role");
   }
 
   try {
-    const res = await fetch(`http://localhost:5000${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
+    const res = await apiRequest(endpoint, "POST", bodyData);
 
-    const data = await res.json();
+    if (!res.success) throw new Error(res.message || "Login failed");
 
-    if (!data.success) {
-      throw new Error(data.message || data.errors?.[0]?.msg || "Login failed");
+    // localStorage.setItem("token", res.data.accessToken);
+    // localStorage.setItem("role", role);
+
+    // const roleMap = {
+    //   admin: "/admin/dashboard.html",
+    //   manager: "/manager/dashboard.html",
+    //   employee: "/employee/dashboard.html",
+    // };
+    // window.location.href = roleMap[role];
+
+    // const { accessToken, admin, manager, employee } = res.data;
+
+    // localStorage.setItem("token", accessToken);
+    // localStorage.setItem("role", admin.role);
+
+    // if (admin.role === "SUPER_ADMIN") {
+    //   window.location.href = `/admin/dashboard.html`;
+    // } else if (admin.role === "ADMIN") {
+    //   window.location.href = `/admin/dashboard.html`;
+    // } else if (manager.role === "MANAGER") {
+    //   window.location.href = `/manager/dashboard.html`;
+    // } else if (employee.role === "EMPLOYEE") {
+    //   window.location.href = `/employee/dashboard.html`;
+    // }
+
+    if (role === "ADMIN") {
+      const { accessToken, admin } = res.data;
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("role", admin.role);
+      window.location.href = "admin/dashboard.html";
+    } else if (role === "MANAGER") {
+      const { accessToken, manager } = res.data;
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("role", manager.role);
+      window.location.href = "manager/dashboard.html";
+    } else if (role === "EMPLOYEE") {
+      const { accessToken, employee } = res.data;
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("role", employee.role);
+      window.location.href = "employee/dashboard.html";
     }
-
-    // Save accessToken and role
-    localStorage.setItem("accessToken", data.data.accessToken);
-    localStorage.setItem("role", role);
-
-    // Redirect based on role
-    if (role === "admin") window.location.href = "admin/dashboard.html";
-    else if (role === "manager") window.location.href = "manager/dashboard.html";
-    else if (role === "employee") window.location.href = "employee/dashboard.html";
   } catch (err) {
-    console.error("Login error:", err);
-    if (loginError) {
-      loginError.textContent = err.message;
-      loginError.style.display = "block";
-    }
+    loginError.textContent = err.message;
+    loginError.style.display = "block";
   }
 }

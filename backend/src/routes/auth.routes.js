@@ -3,7 +3,8 @@ const { body } = require("express-validator");
 const AuthController = require("../controllers/auth.controller");
 const { loginLimiter } = require("../middleware/rateLimit.middleware");
 const validate = require("../middleware/validate.middleware");
-
+const roles = require("../constants/roles");
+const authorize = require("../middleware/role.middleware");
 const router = express.Router();
 
 router.post(
@@ -14,7 +15,7 @@ router.post(
   (req, res, next) => AuthController.adminLogin(req, res, next),
 );
 
-router.post("/employee/login", (req, res, next) =>
+router.post("/employee/login", authorize(roles.EMPLOYEE), (req, res, next) =>
   AuthController.employeeLogin(req, res, next),
 );
 

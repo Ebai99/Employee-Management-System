@@ -1,108 +1,293 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Employee Management System | Login</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ICT Hub • EMS | Login</title>
+  <link rel="stylesheet" href="/assets/css/animations.css" />
+  
+  <style>
+        * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="assets/css/base.css" />
-    <link rel="stylesheet" href="assets/css/components.css" />
-    <link rel="stylesheet" href="assets/css/animations.css" />
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    <style>
-      body {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .login-container {
+      width: 100%;
+      max-width: 480px;
+      padding: 1.5rem;
+    }
+
+    .login-card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 16px;
+      padding: 2.8rem 2.4rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.4rem;
+    }
+
+    .login-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(0, 212, 255, 0.12);
+      color: #00d4ff;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 0 auto 1.2rem;
+    }
+
+    .login-header h1 {
+      font-size: 1.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .highlight {
+      color: #00d4ff;
+    }
+
+    .subtitle {
+      color: #8b949e;
+      font-size: 1rem;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .form-group label {
+      color: #c9d1d9;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8b949e;
+      font-size: 1.1rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.8rem;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #00d4ff;
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .btn {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #00d4ff;
+      color: #0d1117;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn:hover {
+      /* background: #00c0e6; */
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn:active {
+        transform: scale(0.97);
       }
 
-      .login-card {
-        width: 100%;
-        max-width: 420px;
-        background: white;
-        padding: 32px;
-        border-radius: 18px;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-      }
+    .login-footer {
+      text-align: center;
+      margin-top: 1.8rem;
+    }
 
-      .login-card h1 {
-        margin-bottom: 8px;
-        font-size: 26px;
-      }
+    .forgot-password {
+      color: #8b949e;
+      font-size: 0.92rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
 
-      .login-card p {
-        margin-bottom: 24px;
-        color: #6b7280;
-      }
+    .forgot-password:hover {
+      color: #00d4ff;
+    }
 
-      .login-card input,
-      .login-card select {
-        width: 100%;
-        padding: 12px 14px;
-        margin-bottom: 14px;
-        border-radius: 10px;
-        border: 1px solid #e5e7eb;
-        font-size: 15px;
-      }
-
-      .login-card input:focus,
-      .login-card select:focus {
-        outline: none;
-        border-color: #6366f1;
-      }
-
-      .login-card button {
-        width: 100%;
-        margin-top: 10px;
-      }
-
-      .brand {
+    .error {
+        color: #ef4444;
         text-align: center;
-        margin-bottom: 20px;
-        font-weight: 700;
-        color: #4f46e5;
-        letter-spacing: 1px;
+        margin-top: 16px;
+        display: none;
       }
-    </style>
-  </head>
-  <body>
-    <div class="login-card fade-in">
-      <div class="brand">EMPLOYEE SYSTEM</div>
 
-      <h1>Welcome Back</h1>
-      <p>Sign in to continue</p>
+    /* Responsive */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 2rem 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
 
-      <div
-        id="loginError"
-        style="
-          color: #dc2626;
-          margin-bottom: 12px;
-          font-size: 14px;
-          display: none;
-        "
-      ></div>
+  <div class="login-container fade-in">
 
-      <select id="role">
-        <option value="admin">Admin</option>
-        <option value="manager">Manager</option>
-        <option value="employee">Employee</option>
-      </select>
+    <div class="login-card">
 
-      <input type="text" id="identifier" placeholder="Email or Employee Code" />
-      <input
-        type="password"
-        id="password"
-        placeholder="Password / Access Code"
-      />
+      <!-- Logo / Icon -->
+      <div class="login-header">
+        <div class="login-icon">→</div>
+        <h1>Welcome to <span class="highlight">EMS</span></h1>
+        <p class="subtitle">Sign in to access your dashboard</p>
+      </div>
 
-      <button class="btn" onclick="login()">Login</button>
+      <!-- Form -->
+      <form class="login-form" id="loginForm">
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="identifier">Email / Employee Code</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉</span>
+            <input 
+              type="text" 
+              id="identifier" 
+              placeholder="you@company.com or EMP-12345" 
+              required 
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">Password / Access Code</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="password" 
+              placeholder="••••••••" 
+              required 
+              autocomplete="current-password"
+            />
+            <button type="button" class="toggle-password" onclick="togglePassword()">
+              👁
+            </button>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label for="role">Role</label>
+          <div class="input-wrapper">
+            <select id="role" class="role-select" required>
+              <option value="" disabled selected>Select your role</option>
+              <option value="ADMIN">Administrator</option>
+              <option value="MANAGER">Manager</option>
+              <option value="EMPLOYEE">Employee</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="button" class="btn" id="loginBtn">
+          Sign In
+        </button>
+
+        <div id="loginError" class="error"></div>
+
+      </form>
+
+      <!-- Footer links -->
+      <div class="login-footer">
+        <a href="#" class="forgot-password">Forgot your password? Reset it</a>
+      </div></br>
+
+      <div style="text-align:center"><small>@HERITAGE ICT HUB</small></div>
+
     </div>
 
-    <!-- Scripts -->
-    <script src="assets/js/api.js"></script>
-    <script src="assets/js/ui.js"></script>
-    <script src="assets/js/auth.js"></script>
-  </body>
+  </div>
+
+  <!--scripts-->
+   <script src="./assets/js/api.js"></script>
+   <script src="/assets/js/auth.js"></script>
+   <script>
+          // Toggle password visibility
+function togglePassword() {
+  const passwordInput = document.getElementById("password");
+  const toggleBtn = document.querySelector(".toggle-password");
+
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    toggleBtn.textContent = "🙈";
+  } else {
+    passwordInput.type = "password";
+    toggleBtn.textContent = "👁";
+  }
+}
+
+     document.addEventListener("DOMContentLoaded", () => {
+       const loginBtn = document.getElementById("loginBtn");
+       if (loginBtn) {
+         loginBtn.addEventListener("click", login);
+       }
+     });
+   </script>
+</body>
 </html>

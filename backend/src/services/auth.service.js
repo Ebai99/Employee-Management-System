@@ -4,6 +4,7 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../utils/token.util");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Employee = require("../models/Employee");
@@ -35,7 +36,7 @@ class AuthService {
         id: admin.id,
         name: admin.name,
         email: admin.email,
-        role: admin.role,
+        role: "ADMIN",
       },
     };
   }
@@ -60,18 +61,14 @@ class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    const token = jwt.sign(
-      {
-        id: employee.id,
-        role: "employee",
-        employee_code: employee.employee_code,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" },
-    );
+    const accessToken = generateAccessToken({
+      id: employee.id,
+      role: "EMPLOYEE",
+      employee_code: employee.employee_code,
+    });
 
     return {
-      token,
+      accessToken,
       employee: {
         employee_code: employee.employee_code,
         firstname: employee.firstname,

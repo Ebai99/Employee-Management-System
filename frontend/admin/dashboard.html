@@ -1,63 +1,197 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="../assets/css/base.css" />
-    <link rel="stylesheet" href="../assets/css/components.css" />
-    <link rel="stylesheet" href="../assets/css/animations.css" />
-    <link rel="stylesheet" href="../assets/css/dashboard.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stellar EMS • Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <div class="layout">
-      <!-- SIDEBAR -->
-      <nav class="sidebar">
-        <h2>Admin Panel</h2>
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="#">Employees</a>
-        <a href="#">Managers</a>
-        <a href="#">Reports</a>
-        <a href="#">Audit Logs</a>
-        <a href="#" onclick="logout()">Logout</a>
-      </nav>
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <span class="logo-symbol">S</span>
+            <div class="logo-text">
+              stellar
+              <small>EMS</small>
+            </div>
+          </div>
+          <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </div>
 
-      <main class="content">
-        <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+        <div class="user-role">Administrator</div>
 
-        <section class="dashboard fade-in">
-          <h2>Admin Dashboard</h2>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-link active">
+            <span class="icon">🏠</span> Dashboard
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">👤</span> Employees
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">📊</span> Reports
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">📜</span> Activity Log
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">⚙️</span> Settings
+          </a>
+        </nav>
 
-          <div class="cards">
-            <div class="card">
-              Total Employees: <strong id="totalEmployees">0</strong>
+        <div class="sidebar-footer">
+          <button class="logout-btn" onclick="logout()">
+            <span class="icon">↪</span> Logout
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="main-area">
+        <header class="topbar">
+          <h1 class="page-title">Dashboard</h1>
+
+          <div class="user-section">
+            <button class="notification-btn" onclick="toggleNotifications()">
+              <span class="bell">🔔</span>
+              <span class="badge"></span>
+            </button>
+
+            <div class="user-profile">
+              <div class="user-info">
+                <div class="name">Admin User</div>
+                <div class="role">Administrator</div>
+              </div>
+              <div class="avatar">AU</div>
+            </div>
+          </div>
+        </header>
+
+        <main class="content">
+          <!-- KPI Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon">👥</div>
+              <div class="kpi-content">
+                <div class="label">TOTAL EMPLOYEES</div>
+                <div class="value">1,248</div>
+                <div class="change positive">+12 this month</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">➕</div>
+              <div class="kpi-content">
+                <div class="label">NEW HIRES</div>
+                <div class="value">36</div>
+                <div class="change positive">+8 last month</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">📉</div>
+              <div class="kpi-content">
+                <div class="label">ATTRITION RATE</div>
+                <div class="value">2.4%</div>
+                <div class="change negative">-0.3% vs last month</div>
+              </div>
+            </div>
+
+            <div class="kpi-card warning-card">
+              <div class="kpi-icon">🚨</div>
+              <div class="kpi-content">
+                <div class="label">OPEN POSITIONS</div>
+                <div class="value">18</div>
+                <div class="change warning">5 urgent</div>
+              </div>
             </div>
           </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Employee Code</th>
-                <th>Name</th>
-                <th>Email</th>
-              </tr>
-            </thead>
-            <tbody id="employeeTable"></tbody>
-          </table>
-        </section>
-      </main>
+          <!-- Charts Row -->
+          <div class="charts-row">
+            <div class="chart-card large">
+              <div class="chart-header">
+                <div>
+                  <h3>Employee Growth</h3>
+                  <p>Monthly new hires</p>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>By Department</h3>
+                <p>Employee distribution</p>
+              </div>
+              <div class="chart-container doughnut-container">
+                <canvas id="departmentChart"></canvas>
+              </div>
+              <div class="legend">
+                <div>
+                  <span class="dot eng"></span>Engineering
+                  <span class="count">45</span>
+                </div>
+                <div>
+                  <span class="dot mkt"></span>Marketing
+                  <span class="count">22</span>
+                </div>
+                <div>
+                  <span class="dot sales"></span>Sales
+                  <span class="count">18</span>
+                </div>
+                <div>
+                  <span class="dot hr"></span>HR <span class="count">10</span>
+                </div>
+                <div>
+                  <span class="dot fin"></span>Finance
+                  <span class="count">15</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Section -->
+          <div class="bottom-section">
+            <div class="quick-actions">
+              <h3>Quick Actions</h3>
+              <div class="actions-grid">
+                <button class="action-btn">
+                  <span class="icon">👤</span>
+                  Add Employee
+                </button>
+                <button class="action-btn">
+                  <span class="icon">📄</span>
+                  Generate Report
+                </button>
+                <button class="action-btn">
+                  <span class="icon">🧑‍🤝‍🧑</span>
+                  View Attendance
+                </button>
+                <button class="action-btn">
+                  <span class="icon">⏰</span>
+                  Manage Leaves
+                </button>
+              </div>
+            </div>
+
+            <div class="recent-activity">
+              <h3>Recent Activity</h3>
+              <p class="subtitle">Latest system events</p>
+              <div class="activity-list" id="activityFeed"></div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
-    <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/ui.js"></script>
-    <script src="../assets/js/auth.js"></script>
-
-    <script>
-      (async () => {
-        const res = await apiRequest("/employees");
-        if (res.success) {
-          document.getElementById("totalEmployees").textContent =
-            res.data.length;
-        }
-      })();
-    </script>
+    <script src="script.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
   </body>
 </html>

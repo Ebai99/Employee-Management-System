@@ -13,11 +13,18 @@ async function initDatabase() {
 
     // Drop tables first to ensure clean slate
     const dropStatements = [
+      "DROP TABLE IF EXISTS task_logs",
+      "DROP TABLE IF EXISTS tasks",
+      "DROP TABLE IF EXISTS breaks",
+      "DROP TABLE IF EXISTS attendance",
+      "DROP TABLE IF EXISTS performance_metrics",
+      "DROP TABLE IF EXISTS reports",
       "DROP TABLE IF EXISTS activity_logs",
       "DROP TABLE IF EXISTS employees",
       "DROP TABLE IF EXISTS admins",
     ];
 
+    console.log("Dropping existing tables to ensure clean state...");
     for (const statement of dropStatements) {
       console.log(`Executing: ${statement}`);
       await db.execute(statement);

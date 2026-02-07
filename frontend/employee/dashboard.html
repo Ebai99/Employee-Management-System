@@ -2,112 +2,166 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Employee Dashboard</title>
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="../assets/css/base.css" />
-    <link rel="stylesheet" href="../assets/css/components.css" />
-    <link rel="stylesheet" href="../assets/css/animations.css" />
-    <link rel="stylesheet" href="../assets/css/dashboard.css" />
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stellar EMS • Employee Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <div class="layout">
-      <nav class="sidebar">
-        <h2>Employee</h2>
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="#">Attendance</a>
-        <a href="#">Tasks</a>
-        <a href="#">Reports</a>
-        <a href="#" onclick="logout()">Logout</a>
-      </nav>
-
-      <main class="content">
-        <span class="menu-btn" onclick="toggleSidebar()">☰</span>
-
-        <section class="dashboard fade-in">
-          <h1>My Dashboard</h1>
-          <p style="margin-bottom: 20px; color: #6b7280">
-            Your personal performance summary
-          </p>
-
-          <!-- KPI CARDS -->
-          <div class="cards">
-            <div class="card">
-              <h4>Hours Worked (Week)</h4>
-              <strong id="hoursWorked">0</strong>
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <span class="logo-symbol">S</span>
+            <div class="logo-text">
+              stellar
+              <small>EMS</small>
             </div>
-            <div class="card">
-              <h4>Tasks Completed</h4>
-              <strong id="tasksDone">0</strong>
+          </div>
+          <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </div>
+
+        <div class="user-role">Employee</div>
+
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-link active">
+            <span class="icon">🏠</span> Dashboard
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">✓</span> My Tasks
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">🗓️</span> Attendance
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">📈</span> Performance
+          </a>
+          <a href="#" class="nav-link">
+            <span class="icon">💬</span> Messages
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="logout-btn" onclick="logout()">
+            <span class="icon">↪</span> Logout
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="main-area">
+        <header class="topbar">
+          <h1 class="page-title">Dashboard</h1>
+
+          <div class="user-section">
+            <button class="notification-btn" onclick="toggleNotifications()">
+              <span class="bell">🔔</span>
+              <span class="badge red"></span>
+            </button>
+
+            <div class="user-profile">
+              <div class="user-info">
+                <div class="name">Alex Rivera</div>
+                <div class="role">Senior Frontend Developer</div>
+              </div>
+              <div class="avatar">AR</div>
             </div>
-            <div class="card">
-              <h4>Efficiency</h4>
-              <strong id="efficiency">0%</strong>
+          </div>
+        </header>
+
+        <main class="content">
+          <!-- Profile Card -->
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="profile-avatar">AR</div>
+              <div class="profile-info">
+                <h2>Alex Rivera</h2>
+                <p class="position">Senior Frontend Developer • Engineering</p>
+                <p class="meta">
+                  Employee ID: EMP-2024-0847 • Joined March 2022
+                </p>
+              </div>
             </div>
           </div>
 
-          <!-- ATTENDANCE CHART -->
-          <div class="card" style="margin-top: 30px">
-            <h3>Attendance Hours</h3>
-            <canvas id="attendanceChart" height="120"></canvas>
+          <!-- KPI Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon">📋</div>
+              <div class="kpi-content">
+                <div class="label">ACTIVE TASKS</div>
+                <div class="value">5</div>
+                <div class="change">2 due this week</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">📅</div>
+              <div class="kpi-content">
+                <div class="label">ATTENDANCE RATE</div>
+                <div class="value">96%</div>
+                <div class="change positive">+2% vs avg</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">⭐</div>
+              <div class="kpi-content">
+                <div class="label">PERFORMANCE SCORE</div>
+                <div class="value">91</div>
+                <div class="change highlight">Top 10%</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">🔔</div>
+              <div class="kpi-content">
+                <div class="label">NOTIFICATIONS</div>
+                <div class="value">4</div>
+                <div class="change warning">1 urgent</div>
+              </div>
+            </div>
           </div>
 
-          <!-- TASK PERFORMANCE CHART -->
-          <div class="card" style="margin-top: 30px">
-            <h3>Task Performance</h3>
-            <canvas id="taskChart" height="120"></canvas>
+          <!-- Charts Row -->
+          <div class="charts-row">
+            <div class="chart-card">
+              <h3>Hours Worked</h3>
+              <p class="subtitle">This week</p>
+              <div class="chart-container bar-container">
+                <canvas id="hoursChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <h3>Performance Trend</h3>
+              <p class="subtitle">6-month overview</p>
+              <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+              </div>
+            </div>
           </div>
-        </section>
-      </main>
+
+          <!-- Bottom Section -->
+          <div class="bottom-section">
+            <div class="tasks-section">
+              <h3>My Tasks</h3>
+              <p class="subtitle">Current assignments</p>
+              <div class="task-list" id="taskList"></div>
+            </div>
+
+            <div class="notifications-section">
+              <h3>Notifications</h3>
+              <div class="notification-list" id="notificationList"></div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
-    <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/ui.js"></script>
-    <script src="../assets/js/auth.js"></script>
-
-    <script>
-      (async function loadEmployeeDashboard() {
-        const res = await apiRequest("/employee/dashboard");
-
-        if (!res.success) {
-          showToast("Unable to load dashboard");
-          return;
-        }
-
-        document.getElementById("hoursWorked").textContent = res.data.hours;
-        document.getElementById("tasksDone").textContent = res.data.tasks;
-        document.getElementById("efficiency").textContent =
-          res.data.efficiency + "%";
-
-        new Chart(document.getElementById("attendanceChart"), {
-          type: "bar",
-          data: {
-            labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-            datasets: [
-              {
-                label: "Hours",
-                data: [8, 7.5, 8, 6, 7],
-                borderWidth: 1,
-              },
-            ],
-          },
-        });
-
-        new Chart(document.getElementById("taskChart"), {
-          type: "doughnut",
-          data: {
-            labels: ["Completed", "Pending"],
-            datasets: [
-              {
-                data: [res.data.tasks, 5],
-              },
-            ],
-          },
-        });
-      })();
-    </script>
+    <script src="script.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
   </body>
 </html>
