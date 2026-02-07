@@ -349,8 +349,51 @@ body {
 
 .bottom-section {
   display: grid;
-  grid-template-columns: 1fr 1.4fr;
+  grid-template-columns: 1fr;
   gap: 1.6rem;
+}
+
+.employee-management,
+.manager-management {
+  background: #161b22;
+  border: 2px solid #30363d;
+  border-radius: 12px;
+  padding: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+.employee-management:last-child {
+  margin-bottom: 0;
+}
+
+.table {
+  border-collapse: collapse;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.table thead {
+  background: #0d1117;
+  border-bottom: 2px solid #30363d;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #21262d;
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table td {
+  padding: 12px;
+  border-right: 1px solid #21262d;
+}
+
+.table td:last-child {
+  border-right: none;
 }
 
 .quick-actions,

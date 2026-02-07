@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stellar EMS • Employee Dashboard</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/assets/css/components.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   </head>
   <body>
@@ -13,9 +14,9 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="logo">
-            <span class="logo-symbol">S</span>
+            <span class="logo-symbol">H</span>
             <div class="logo-text">
-              stellar
+              Heritage
               <small>EMS</small>
             </div>
           </div>
@@ -90,37 +91,93 @@
             <div class="kpi-card">
               <div class="kpi-icon">📋</div>
               <div class="kpi-content">
-                <div class="label">ACTIVE TASKS</div>
-                <div class="value">5</div>
-                <div class="change">2 due this week</div>
+                <div class="label">CLOCK IN STATUS</div>
+                <div class="value">
+                  <span class="badge" id="attendanceStatus"
+                    >Not Clocked In</span
+                  >
+                </div>
+                <div class="change" id="hoursWorked">0 hours worked</div>
               </div>
             </div>
 
             <div class="kpi-card">
-              <div class="kpi-icon">📅</div>
+              <div class="kpi-icon">☕</div>
               <div class="kpi-content">
-                <div class="label">ATTENDANCE RATE</div>
-                <div class="value">96%</div>
-                <div class="change positive">+2% vs avg</div>
+                <div class="label">BREAK STATUS</div>
+                <div class="value">
+                  <span
+                    class="badge"
+                    id="breakStatus"
+                    style="background: #21262d"
+                    >Working</span
+                  >
+                </div>
+                <div class="change">Current status</div>
               </div>
             </div>
 
             <div class="kpi-card">
               <div class="kpi-icon">⭐</div>
               <div class="kpi-content">
+                <div class="label">ACTIVE TASKS</div>
+                <div class="value">5</div>
+                <div class="change positive">2 due this week</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">📊</div>
+              <div class="kpi-content">
                 <div class="label">PERFORMANCE SCORE</div>
                 <div class="value">91</div>
                 <div class="change highlight">Top 10%</div>
               </div>
             </div>
+          </div>
 
-            <div class="kpi-card">
-              <div class="kpi-icon">🔔</div>
-              <div class="kpi-content">
-                <div class="label">NOTIFICATIONS</div>
-                <div class="value">4</div>
-                <div class="change warning">1 urgent</div>
-              </div>
+          <!-- Attendance Actions -->
+          <div
+            class="action-card"
+            style="
+              margin: 20px 0;
+              padding: 20px;
+              background: #0d1117;
+              border-radius: 8px;
+              border: 1px solid #30363d;
+            "
+          >
+            <h3 style="margin-top: 0">Clock In/Out</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <button
+                class="btn btn-success"
+                id="clockInBtn"
+                style="flex: 1; min-width: 150px"
+              >
+                Clock In
+              </button>
+              <button
+                class="btn btn-danger"
+                id="clockOutBtn"
+                style="flex: 1; min-width: 150px"
+                disabled
+              >
+                Clock Out
+              </button>
+              <button
+                class="btn btn-warning"
+                id="startBreakBtn"
+                style="flex: 1; min-width: 150px"
+              >
+                Start Break
+              </button>
+              <button
+                class="btn btn-secondary"
+                id="endBreakBtn"
+                style="flex: 1; min-width: 150px"
+              >
+                End Break
+              </button>
             </div>
           </div>
 
@@ -151,17 +208,70 @@
               <div class="task-list" id="taskList"></div>
             </div>
 
-            <div class="notifications-section">
-              <h3>Notifications</h3>
-              <div class="notification-list" id="notificationList"></div>
+            <div class="breaks-section">
+              <h3>Break History</h3>
+              <p class="subtitle">Today's breaks</p>
+              <div class="break-list" id="breakHistory"></div>
             </div>
           </div>
         </main>
       </div>
     </div>
 
-    <script src="script.js"></script>
     <script src="/assets/js/api.js"></script>
     <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/ui.js"></script>
+    <script src="/assets/js/errorHandler.js"></script>
+    <script src="/assets/js/charts.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+      // Populate user name and initials from localStorage
+      (function () {
+        try {
+          const raw = localStorage.getItem("user");
+          if (!raw) return;
+          const user = JSON.parse(raw);
+          const fullName = [user.firstname, user.lastname]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+          const initials =
+            (user.firstname ? user.firstname.charAt(0) : "") +
+            (user.lastname ? user.lastname.charAt(0) : "");
+
+          const nameEl = document.querySelector(
+            ".user-profile .user-info .name",
+          );
+          const roleEl = document.querySelector(
+            ".user-profile .user-info .role",
+          );
+          const avatarEls = document.querySelectorAll(
+            ".user-profile .avatar, .profile-avatar",
+          );
+          const profileName = document.querySelector(".profile-info h2");
+          const profilePosition = document.querySelector(
+            ".profile-info .position",
+          );
+
+          if (nameEl && fullName) nameEl.textContent = fullName;
+          if (profileName && fullName) profileName.textContent = fullName;
+          if (avatarEls && initials)
+            avatarEls.forEach(
+              (el) => (el.textContent = initials.toUpperCase()),
+            );
+
+          // If role text exists leave it; optionally populate department/position from stored data
+          if (roleEl && user.department) roleEl.textContent = user.department;
+          if (profilePosition && user.department)
+            profilePosition.textContent =
+              profilePosition.textContent.split("•")[0].trim() +
+              " • " +
+              user.department;
+        } catch (e) {
+          console.error("User populate error", e);
+        }
+      })();
+    </script>
   </body>
 </html>

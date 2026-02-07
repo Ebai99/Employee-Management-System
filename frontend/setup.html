@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Setup - Employee Management System</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .setup-container {
+        width: 100%;
+        max-width: 400px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .setup-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      .setup-header h1 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .setup-header p {
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .setup-body {
+        padding: 40px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      input::placeholder {
+        color: #999;
+      }
+
+      .password-requirements {
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 20px;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .requirement {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .requirement:last-child {
+        margin-bottom: 0;
+      }
+
+      .requirement-check {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        text-align: center;
+        line-height: 16px;
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      }
+
+      .requirement.met .requirement-check {
+        background: #4caf50;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 12px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .login-link {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .login-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .login-link a:hover {
+        text-decoration: underline;
+      }
+
+      .message {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: none;
+      }
+
+      .message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: block;
+      }
+
+      .message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+      }
+
+      .message.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+        display: block;
+      }
+
+      .loader {
+        display: none;
+        text-align: center;
+        margin: 10px 0;
+      }
+
+      .loader.active {
+        display: block;
+      }
+
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .form-info {
+        background: #e3f2fd;
+        border-left: 4px solid #667eea;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #1976d2;
+      }
+
+      .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        gap: 10px;
+      }
+
+      .step {
+        flex: 1;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        transition: background 0.3s ease;
+      }
+
+      .step.active {
+        background: #667eea;
+      }
+
+      .step.completed {
+        background: #4caf50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="setup-container">
+      <div class="setup-header">
+        <h1>🔐 Set Your Password</h1>
+        <p>Create your secure account</p>
+      </div>
+
+      <div class="setup-body">
+        <div id="message" class="message"></div>
+
+        <div class="form-info" id="formInfo">
+          Use the credentials provided by your admin to set up your account
+        </div>
+
+        <form id="setupForm">
+          <div class="form-group">
+            <label for="userCode">Employee/Manager Code</label>
+            <input
+              type="text"
+              id="userCode"
+              placeholder="e.g., EMP-ABC123 or MGR-XYZ789"
+              required
+              maxlength="20"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="accessCode">Access Code</label>
+            <input
+              type="password"
+              id="accessCode"
+              placeholder="Temporary access code"
+              required
+              maxlength="20"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              placeholder="Create a strong password"
+              required
+              minlength="8"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="Confirm your password"
+              required
+              minlength="8"
+            />
+          </div>
+
+          <div class="password-requirements">
+            <div style="margin-bottom: 10px; font-weight: 600; color: #333">
+              Password Requirements:
+            </div>
+            <div class="requirement" id="req-length">
+              <div class="requirement-check">✓</div>
+              <span>At least 8 characters</span>
+            </div>
+            <div class="requirement" id="req-uppercase">
+              <div class="requirement-check">✓</div>
+              <span>At least one uppercase letter</span>
+            </div>
+            <div class="requirement" id="req-lowercase">
+              <div class="requirement-check">✓</div>
+              <span>At least one lowercase letter</span>
+            </div>
+            <div class="requirement" id="req-number">
+              <div class="requirement-check">✓</div>
+              <span>At least one number</span>
+            </div>
+          </div>
+
+          <div class="loader" id="loader">
+            <div class="spinner"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            Create Account
+          </button>
+          <a href="/index.html" class="btn btn-secondary">Back to Login</a>
+        </form>
+
+        <div class="login-link">
+          <p>Already have an account?</p>
+          <a href="/index.html">Go to Login</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/errorHandler.js"></script>
+    <script>
+      // Password validation
+      const newPasswordInput = document.getElementById("newPassword");
+      const confirmPasswordInput = document.getElementById("confirmPassword");
+      const userCodeInput = document.getElementById("userCode");
+      const accessCodeInput = document.getElementById("accessCode");
+      const submitBtn = document.getElementById("submitBtn");
+
+      function validatePassword(password) {
+        return {
+          length: password.length >= 8,
+          uppercase: /[A-Z]/.test(password),
+          lowercase: /[a-z]/.test(password),
+          number: /[0-9]/.test(password),
+        };
+      }
+
+      function updatePasswordRequirements() {
+        const password = newPasswordInput.value;
+        const validation = validatePassword(password);
+
+        document
+          .getElementById("req-length")
+          .classList.toggle("met", validation.length);
+        document
+          .getElementById("req-uppercase")
+          .classList.toggle("met", validation.uppercase);
+        document
+          .getElementById("req-lowercase")
+          .classList.toggle("met", validation.lowercase);
+        document
+          .getElementById("req-number")
+          .classList.toggle("met", validation.number);
+
+        updateSubmitButton();
+      }
+
+      function updateSubmitButton() {
+        const password = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const validation = validatePassword(password);
+        const passwordsMatch =
+          password === confirmPassword && password.length > 0;
+        const allValid =
+          validation.length &&
+          validation.uppercase &&
+          validation.lowercase &&
+          validation.number &&
+          passwordsMatch;
+
+        submitBtn.disabled = !allValid;
+      }
+
+      newPasswordInput.addEventListener("input", () => {
+        updatePasswordRequirements();
+      });
+
+      confirmPasswordInput.addEventListener("input", () => {
+        updateSubmitButton();
+      });
+
+      // Form submission
+      document
+        .getElementById("setupForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const userCode = userCodeInput.value.trim();
+          const accessCode = accessCodeInput.value.trim();
+          const newPassword = newPasswordInput.value;
+          const confirmPassword = confirmPasswordInput.value;
+
+          // Validate inputs
+          if (!userCode || !accessCode || !newPassword) {
+            showMessage("All fields are required", "error");
+            return;
+          }
+
+          if (newPassword !== confirmPassword) {
+            showMessage("Passwords do not match", "error");
+            return;
+          }
+
+          const validation = validatePassword(newPassword);
+          if (
+            !validation.length ||
+            !validation.uppercase ||
+            !validation.lowercase ||
+            !validation.number
+          ) {
+            showMessage("Password does not meet requirements", "error");
+            return;
+          }
+
+          // Submit setup request
+          try {
+            document.getElementById("loader").classList.add("active");
+            submitBtn.disabled = true;
+
+            const response = await fetch("/api/auth/setup", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                employee_code: userCode,
+                access_code: accessCode,
+                new_password: newPassword,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || "Failed to set up account");
+            }
+
+            showMessage(
+              "Account created successfully! Redirecting to login...",
+              "success",
+            );
+
+            setTimeout(() => {
+              window.location.href = "/index.html";
+            }, 2000);
+          } catch (error) {
+            showMessage(error.message || "Failed to set up account", "error");
+            submitBtn.disabled = false;
+          } finally {
+            document.getElementById("loader").classList.remove("active");
+          }
+        });
+
+      function showMessage(message, type) {
+        const messageEl = document.getElementById("message");
+        messageEl.textContent = message;
+        messageEl.className = `message ${type}`;
+        messageEl.scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Initialize
+      updatePasswordRequirements();
+    </script>
+  </body>
+</html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stellar EMS • Admin Dashboard</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/assets/css/components.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   </head>
   <body>
@@ -13,9 +14,9 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="logo">
-            <span class="logo-symbol">S</span>
+            <span class="logo-symbol">H</span>
             <div class="logo-text">
-              stellar
+              Heritage
               <small>EMS</small>
             </div>
           </div>
@@ -25,10 +26,18 @@
         <div class="user-role">Administrator</div>
 
         <nav class="sidebar-nav">
-          <a href="#" class="nav-link active">
+          <a
+            href="#"
+            class="nav-link active"
+            onclick="switchSection('dashboard', event)"
+          >
             <span class="icon">🏠</span> Dashboard
           </a>
-          <a href="#" class="nav-link">
+          <a
+            href="#"
+            class="nav-link"
+            onclick="switchSection('employees', event)"
+          >
             <span class="icon">👤</span> Employees
           </a>
           <a href="#" class="nav-link">
@@ -52,7 +61,7 @@
       <!-- Main Content -->
       <div class="main-area">
         <header class="topbar">
-          <h1 class="page-title">Dashboard</h1>
+          <h1 class="page-title" id="pageTitle">Dashboard</h1>
 
           <div class="user-section">
             <button class="notification-btn" onclick="toggleNotifications()">
@@ -71,127 +80,790 @@
         </header>
 
         <main class="content">
-          <!-- KPI Cards -->
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-icon">👥</div>
-              <div class="kpi-content">
-                <div class="label">TOTAL EMPLOYEES</div>
-                <div class="value">1,248</div>
-                <div class="change positive">+12 this month</div>
+          <!-- Dashboard Section -->
+          <div id="dashboardSection">
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-content">
+                  <div class="label">TOTAL EMPLOYEES</div>
+                  <div class="value" id="totalEmployees">10</div>
+                  <div class="change positive">+2 this month</div>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-icon">➕</div>
+                <div class="kpi-content">
+                  <div class="label">NEW HIRES</div>
+                  <div class="value">36</div>
+                  <div class="change positive">+8 last month</div>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-icon">📉</div>
+                <div class="kpi-content">
+                  <div class="label">ATTRITION RATE</div>
+                  <div class="value">2.4%</div>
+                  <div class="change negative">-0.3% vs last month</div>
+                </div>
+              </div>
+
+              <div class="kpi-card warning-card">
+                <div class="kpi-icon">🚨</div>
+                <div class="kpi-content">
+                  <div class="label">OPEN POSITIONS</div>
+                  <div class="value">18</div>
+                  <div class="change warning">5 urgent</div>
+                </div>
               </div>
             </div>
 
-            <div class="kpi-card">
-              <div class="kpi-icon">➕</div>
-              <div class="kpi-content">
-                <div class="label">NEW HIRES</div>
-                <div class="value">36</div>
-                <div class="change positive">+8 last month</div>
+            <!-- Charts Row -->
+            <div class="charts-row">
+              <div class="chart-card large">
+                <div class="chart-header">
+                  <div>
+                    <h3>Employee Growth</h3>
+                    <p>Monthly new hires</p>
+                  </div>
+                </div>
+                <div class="chart-container">
+                  <canvas id="growthChart"></canvas>
+                </div>
               </div>
-            </div>
 
-            <div class="kpi-card">
-              <div class="kpi-icon">📉</div>
-              <div class="kpi-content">
-                <div class="label">ATTRITION RATE</div>
-                <div class="value">2.4%</div>
-                <div class="change negative">-0.3% vs last month</div>
-              </div>
-            </div>
-
-            <div class="kpi-card warning-card">
-              <div class="kpi-icon">🚨</div>
-              <div class="kpi-content">
-                <div class="label">OPEN POSITIONS</div>
-                <div class="value">18</div>
-                <div class="change warning">5 urgent</div>
+              <div class="chart-card">
+                <div class="chart-header">
+                  <h3>By Department</h3>
+                  <p>Employee distribution</p>
+                </div>
+                <div class="chart-container doughnut-container">
+                  <canvas id="departmentChart"></canvas>
+                </div>
+                <div class="legend">
+                  <div>
+                    <span class="dot eng"></span>Engineering
+                    <span class="count">45</span>
+                  </div>
+                  <div>
+                    <span class="dot mkt"></span>Marketing
+                    <span class="count">22</span>
+                  </div>
+                  <div>
+                    <span class="dot sales"></span>Sales
+                    <span class="count">18</span>
+                  </div>
+                  <div>
+                    <span class="dot hr"></span>HR <span class="count">10</span>
+                  </div>
+                  <div>
+                    <span class="dot fin"></span>Finance
+                    <span class="count">15</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <!-- End Dashboard Section -->
 
-          <!-- Charts Row -->
-          <div class="charts-row">
-            <div class="chart-card large">
-              <div class="chart-header">
-                <div>
-                  <h3>Employee Growth</h3>
-                  <p>Monthly new hires</p>
+          <!-- Employees Section (Hidden by default) -->
+          <div id="employeesSection" style="display: none">
+            <!-- Bottom Section -->
+            <div class="bottom-section">
+              <!-- Employee Management Section -->
+              <div class="employee-management">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <h3>Employee Management</h3>
+                  <button
+                    class="btn btn-success"
+                    onclick="
+                      document.getElementById(
+                        'createEmployeeModal',
+                      ).style.display = 'block'
+                    "
+                  >
+                    + Add Employee
+                  </button>
                 </div>
-              </div>
-              <div class="chart-container">
-                <canvas id="growthChart"></canvas>
-              </div>
-            </div>
 
-            <div class="chart-card">
-              <div class="chart-header">
-                <h3>By Department</h3>
-                <p>Employee distribution</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px">
+                  <input
+                    type="text"
+                    id="employeeSearch"
+                    placeholder="Search by name or email..."
+                    style="
+                      flex: 1;
+                      padding: 8px;
+                      border: 1px solid #30363d;
+                      border-radius: 6px;
+                      background: #0d1117;
+                      color: #c9d1d9;
+                    "
+                  />
+                  <select
+                    id="statusFilter"
+                    style="
+                      padding: 8px;
+                      border: 1px solid #30363d;
+                      border-radius: 6px;
+                      background: #0d1117;
+                      color: #c9d1d9;
+                    "
+                  >
+                    <option value="">All Status</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                  </select>
+                </div>
+
+                <table
+                  class="table"
+                  style="width: 100%; border-collapse: collapse"
+                >
+                  <thead
+                    style="
+                      background: #161b22;
+                      border-bottom: 2px solid #30363d;
+                    "
+                  >
+                    <tr>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Name
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Email
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Telephone
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Address
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Department
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Status
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="employeeTableBody"></tbody>
+                </table>
               </div>
-              <div class="chart-container doughnut-container">
-                <canvas id="departmentChart"></canvas>
+
+              <!-- Manager Management Section -->
+              <div class="manager-management">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <h3>Manager Management</h3>
+                  <button
+                    class="btn btn-success"
+                    onclick="
+                      document.getElementById(
+                        'createManagerModal',
+                      ).style.display = 'block'
+                    "
+                  >
+                    + Add Manager
+                  </button>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px">
+                  <input
+                    type="text"
+                    id="managerSearch"
+                    placeholder="Search by name or email..."
+                    style="
+                      flex: 1;
+                      padding: 8px;
+                      border: 1px solid #30363d;
+                      border-radius: 6px;
+                      background: #0d1117;
+                      color: #c9d1d9;
+                    "
+                  />
+                  <select
+                    id="managerStatusFilter"
+                    style="
+                      padding: 8px;
+                      border: 1px solid #30363d;
+                      border-radius: 6px;
+                      background: #0d1117;
+                      color: #c9d1d9;
+                    "
+                  >
+                    <option value="">All Status</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                  </select>
+                </div>
+
+                <table
+                  class="table"
+                  style="width: 100%; border-collapse: collapse"
+                >
+                  <thead
+                    style="
+                      background: #161b22;
+                      border-bottom: 2px solid #30363d;
+                    "
+                  >
+                    <tr>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Name
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Email
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Telephone
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Address
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Department
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Status
+                      </th>
+                      <th
+                        style="padding: 12px; text-align: left; color: #8b949e"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="managerTableBody"></tbody>
+                </table>
               </div>
-              <div class="legend">
-                <div>
-                  <span class="dot eng"></span>Engineering
-                  <span class="count">45</span>
-                </div>
-                <div>
-                  <span class="dot mkt"></span>Marketing
-                  <span class="count">22</span>
-                </div>
-                <div>
-                  <span class="dot sales"></span>Sales
-                  <span class="count">18</span>
-                </div>
-                <div>
-                  <span class="dot hr"></span>HR <span class="count">10</span>
-                </div>
-                <div>
-                  <span class="dot fin"></span>Finance
-                  <span class="count">15</span>
-                </div>
+
+              <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <p class="subtitle">Latest system events</p>
+                <div class="activity-list" id="activityFeed"></div>
               </div>
             </div>
           </div>
-
-          <!-- Bottom Section -->
-          <div class="bottom-section">
-            <div class="quick-actions">
-              <h3>Quick Actions</h3>
-              <div class="actions-grid">
-                <button class="action-btn">
-                  <span class="icon">👤</span>
-                  Add Employee
-                </button>
-                <button class="action-btn">
-                  <span class="icon">📄</span>
-                  Generate Report
-                </button>
-                <button class="action-btn">
-                  <span class="icon">🧑‍🤝‍🧑</span>
-                  View Attendance
-                </button>
-                <button class="action-btn">
-                  <span class="icon">⏰</span>
-                  Manage Leaves
-                </button>
-              </div>
-            </div>
-
-            <div class="recent-activity">
-              <h3>Recent Activity</h3>
-              <p class="subtitle">Latest system events</p>
-              <div class="activity-list" id="activityFeed"></div>
-            </div>
-          </div>
+          <!-- End Employees Section -->
         </main>
       </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Create/Edit Employee Modal -->
+    <div
+      id="createEmployeeModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      "
+    >
+      <div
+        style="
+          background: #0d1117;
+          border: 1px solid #30363d;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 500px;
+          padding: 20px;
+        "
+      >
+        <h2 style="margin-top: 0">Add New Employee</h2>
+        <form id="createEmployeeForm">
+          <input type="hidden" id="employeeCode" />
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >First Name</label
+            >
+            <input
+              type="text"
+              id="firstName"
+              name="firstname"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Last Name</label
+            >
+            <input
+              type="text"
+              id="lastName"
+              name="lastname"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Telephone</label
+            >
+            <input
+              type="tel"
+              id="telephone"
+              name="telephone"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Address</label
+            >
+            <input
+              type="text"
+              id="address"
+              name="address"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Department</label
+            >
+            <input
+              type="text"
+              id="department"
+              name="department"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Position</label
+            >
+            <input
+              type="text"
+              id="position"
+              name="position"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button type="submit" class="btn btn-success" style="flex: 1">
+              Save Employee
+            </button>
+            <button
+              type="button"
+              onclick="
+                document.getElementById('createEmployeeModal').style.display =
+                  'none'
+              "
+              class="btn btn-secondary"
+              style="flex: 1"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Create/Edit Manager Modal -->
+    <div
+      id="createManagerModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      "
+    >
+      <div
+        style="
+          background: #0d1117;
+          border: 1px solid #30363d;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 500px;
+          padding: 20px;
+        "
+      >
+        <h2 style="margin-top: 0">Add New Manager</h2>
+        <form id="managerForm">
+          <input type="hidden" id="managerCode" />
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >First Name</label
+            >
+            <input
+              type="text"
+              id="mFirstName"
+              name="firstname"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Last Name</label
+            >
+            <input
+              type="text"
+              id="mLastName"
+              name="lastname"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="mEmail"
+              name="email"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Telephone</label
+            >
+            <input
+              type="tel"
+              id="mTelephone"
+              name="telephone"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Address</label
+            >
+            <input
+              type="text"
+              id="mAddress"
+              name="address"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Department</label
+            >
+            <input
+              type="text"
+              id="mDepartment"
+              name="department"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 15px">
+            <label style="display: block; margin-bottom: 5px; color: #c9d1d9"
+              >Position</label
+            >
+            <input
+              type="text"
+              id="mPosition"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background: #161b22;
+                color: #c9d1d9;
+              "
+            />
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button type="submit" class="btn btn-success" style="flex: 1">
+              Save Manager
+            </button>
+            <button
+              type="button"
+              onclick="
+                document.getElementById('createManagerModal').style.display =
+                  'none'
+              "
+              class="btn btn-secondary"
+              style="flex: 1"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Access Code Modal -->
+    <div
+      id="accessCodeModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      "
+    >
+      <div
+        style="
+          background: #0d1117;
+          border: 1px solid #30363d;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 500px;
+          padding: 20px;
+        "
+      >
+        <h2 style="margin-top: 0">Employee Access Code</h2>
+        <p style="color: #8b949e">
+          Share these credentials with the new employee:
+        </p>
+        <div
+          style="
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+          "
+        >
+          <div style="margin-bottom: 10px">
+            <label style="color: #8b949e; font-size: 12px">Employee Code</label>
+            <div
+              style="
+                font-family: monospace;
+                color: #58a6ff;
+                font-size: 14px;
+                word-break: break-all;
+              "
+              id="codeDisplay"
+            ></div>
+          </div>
+          <div>
+            <label style="color: #8b949e; font-size: 12px"
+              >Access Password</label
+            >
+            <div
+              style="
+                font-family: monospace;
+                color: #58a6ff;
+                font-size: 14px;
+                word-break: break-all;
+              "
+              id="passwordDisplay"
+            ></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button
+            onclick="
+              copyToClipboard(
+                document.getElementById('codeDisplay').textContent,
+              )
+            "
+            class="btn btn-primary"
+            style="flex: 1"
+          >
+            Copy Code
+          </button>
+          <button
+            onclick="
+              copyToClipboard(
+                document.getElementById('passwordDisplay').textContent,
+              )
+            "
+            class="btn btn-primary"
+            style="flex: 1"
+          >
+            Copy Password
+          </button>
+          <button
+            onclick="
+              document.getElementById('accessCodeModal').style.display = 'none'
+            "
+            class="btn btn-secondary"
+            style="flex: 1"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="/assets/js/api.js"></script>
     <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/ui.js"></script>
+    <script src="/assets/js/errorHandler.js"></script>
+    <script src="/assets/js/charts.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>

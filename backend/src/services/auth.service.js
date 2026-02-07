@@ -48,7 +48,7 @@ class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    if (employee.status !== "active") {
+    if (employee.status !== "ACTIVE") {
       throw new Error("Account is inactive. Contact admin.");
     }
 
@@ -75,6 +75,73 @@ class AuthService {
         lastname: employee.lastname,
         email: employee.email,
       },
+    };
+  }
+
+  static async managerLogin(manager_code, access_code) {
+    const manager = await Employee.findByCode(manager_code);
+
+    if (!manager) {
+      throw new Error("Invalid credentials");
+    }
+
+    if (manager.role !== "MANAGER") {
+      throw new Error("Invalid credentials");
+    }
+
+    if (manager.status !== "ACTIVE") {
+      throw new Error("Account is inactive. Contact admin.");
+    }
+
+    const isMatch = await bcrypt.compare(access_code, manager.access_code_hash);
+
+    if (!isMatch) {
+      throw new Error("Invalid credentials");
+    }
+
+    const accessToken = generateAccessToken({
+      id: manager.id,
+      role: "MANAGER",
+      employee_code: manager.employee_code,
+    });
+
+    return {
+      accessToken,
+      manager: {
+        manager_code: manager.employee_code,
+        firstname: manager.firstname,
+        lastname: manager.lastname,
+        email: manager.email,
+      },
+    };
+  }
+
+  static async setupPassword(employee_code, access_code, new_password) {
+    const employee = await Employee.findByCode(employee_code);
+
+    if (!employee) {
+      throw new Error("Invalid employee code");
+    }
+
+    // Verify access code
+    const isMatch = await bcrypt.compare(
+      access_code,
+      employee.access_code_hash,
+    );
+
+    if (!isMatch) {
+      throw new Error("Invalid access code");
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // Update employee with new password hash (replace access code with password)
+    await Employee.updatePasswordHash(employee_code, hashedPassword);
+
+    return {
+      success: true,
+      message: "Password set successfully",
     };
   }
 }

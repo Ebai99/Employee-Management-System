@@ -29,6 +29,15 @@ router.post(
   (req, res, next) => AdminController.createEmployee(req, res, next),
 );
 
+router.post(
+  "/managers",
+  auth,
+  authorize(roles.ADMIN, roles.SUPER_ADMIN),
+  audit("CREATE_MANAGER", "employee"),
+  createEmployeeValidator,
+  (req, res, next) => AdminController.createManager(req, res, next),
+);
+
 router.get(
   "/employees",
   auth,

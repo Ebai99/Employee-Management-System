@@ -15,14 +15,18 @@ class EmployeeService {
       firstname: data.firstname,
       lastname: data.lastname,
       email: data.email,
+      telephone: data.telephone,
+      address: data.address,
+      department: data.department,
       accessCodeHash,
+      role: data.role || "EMPLOYEE",
       createdBy: admin.id,
     });
 
     await ActivityLog.log({
       actorType: "ADMIN",
       actorId: admin.id,
-      action: `Created employee ${employeeCode}`,
+      action: `Created ${data.role || "EMPLOYEE"} ${employeeCode}`,
       ip: data.ip,
     });
 

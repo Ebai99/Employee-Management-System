@@ -41,6 +41,45 @@ class AdminController {
     }
   }
 
+  static async createManager(req, res, next) {
+    try {
+      const { firstname, lastname, email } = req.body;
+
+      // generate manager code
+      const managerCode = `MGR-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+
+      // generate access code (shown once)
+      const accessCode = Math.random().toString(36).slice(-8);
+
+      const hashedCode = await bcrypt.hash(accessCode, 10);
+
+      const employeeId = await Employee.create({
+        employeeCode: managerCode,
+        firstname,
+        lastname,
+        email,
+        accessCodeHash: hashedCode,
+        createdBy: req.user ? req.user.id : null,
+        role: "MANAGER",
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Manager created successfully",
+        data: {
+          id: employeeId,
+          manager_code: managerCode,
+          firstname,
+          lastname,
+          email,
+          access_code: accessCode,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async getAllEmployees(req, res, next) {
     try {
       const employees = await Employee.findAll();

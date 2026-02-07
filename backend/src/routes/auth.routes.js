@@ -15,8 +15,16 @@ router.post(
   (req, res, next) => AuthController.adminLogin(req, res, next),
 );
 
-router.post("/employee/login", authorize(roles.EMPLOYEE), (req, res, next) =>
+router.post("/employee/login", (req, res, next) =>
   AuthController.employeeLogin(req, res, next),
+);
+
+router.post("/manager/login", (req, res, next) =>
+  AuthController.managerLogin(req, res, next),
+);
+
+router.post("/setup", (req, res, next) =>
+  AuthController.setupPassword(req, res, next),
 );
 
 module.exports = router;
