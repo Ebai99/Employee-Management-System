@@ -43,20 +43,23 @@ async function initDashboard() {
 
 function updateUserInfo() {
   const userStr = localStorage.getItem("user");
-  
+
   if (userStr) {
     try {
       const user = JSON.parse(userStr);
       const nameElement = document.querySelector(".user-info .name");
       if (nameElement) {
-        const fullName = `${user.firstname || ""} ${user.lastname || ""}`.trim();
+        const fullName =
+          `${user.firstname || ""} ${user.lastname || ""}`.trim();
         nameElement.textContent = fullName || user.email || "Manager";
       }
-      
+
       // Update avatar with initials
       const avatar = document.querySelector(".user-profile .avatar");
       if (avatar && user.firstname && user.lastname) {
-        avatar.textContent = (user.firstname[0] + user.lastname[0]).toUpperCase();
+        avatar.textContent = (
+          user.firstname[0] + user.lastname[0]
+        ).toUpperCase();
       }
     } catch (e) {
       console.error("Error parsing user info:", e);
@@ -76,10 +79,17 @@ async function loadTeamStats() {
 
     // Calculate stats from team data
     const teamSize = teamMembers.length;
-    const tasksAssigned = teamMembers.reduce((sum, m) => sum + (m.tasks_assigned || 0), 0);
-    const tasksCompleted = teamMembers.reduce((sum, m) => sum + (m.tasks_completed || 0), 0);
+    const tasksAssigned = teamMembers.reduce(
+      (sum, m) => sum + (m.tasks_assigned || 0),
+      0,
+    );
+    const tasksCompleted = teamMembers.reduce(
+      (sum, m) => sum + (m.tasks_completed || 0),
+      0,
+    );
     const avgPerformance = Math.round(
-      teamMembers.reduce((sum, m) => sum + (m.performance_score || 0), 0) / (teamSize || 1)
+      teamMembers.reduce((sum, m) => sum + (m.performance_score || 0), 0) /
+        (teamSize || 1),
     );
 
     // Update stat cards
@@ -147,7 +157,7 @@ async function loadTeamAttendance(date = new Date()) {
     if (!teamResponse.success) return;
 
     const teamMembers = teamResponse.data || [];
-    
+
     // Randomly generated attendance data (should be from backend in production)
     const presentCount = Math.floor(Math.random() * teamMembers.length);
     const absentCount = teamMembers.length - presentCount;
@@ -170,19 +180,6 @@ async function loadTeamAttendance(date = new Date()) {
 }
 
 // ======================= TEAM TASKS =======================
-
-async function loadTeamTasks(filter = "all") {
-  try {
-    // Tasks endpoint uses /tasks route
-    const response = await apiRequest(`/tasks?filter=${filter}`);
-
-    if (!response.success) return;
-
-    tasksData = response.data || [];
-  } catch (error) {
-    console.error("Error loading tasks:", error);
-  }
-}
 
 // ======================= CHARTS =======================
 
@@ -223,11 +220,13 @@ function switchSection(section, event) {
 
   const dashboardSection = document.getElementById("dashboardSection");
   const teamSection = document.getElementById("teamSection");
+  const tasksSection = document.getElementById("tasksSection");
   const navLinks = document.querySelectorAll(".sidebar-nav .nav-link");
 
   // Hide all sections
   if (dashboardSection) dashboardSection.style.display = "none";
   if (teamSection) teamSection.style.display = "none";
+  if (tasksSection) tasksSection.style.display = "none";
 
   // Remove active class from all nav links
   navLinks.forEach((link) => link.classList.remove("active"));
@@ -240,6 +239,10 @@ function switchSection(section, event) {
     if (teamSection) teamSection.style.display = "block";
     loadTeamMembersTable();
     navLinks[1].classList.add("active");
+  } else if (section === "tasks") {
+    if (tasksSection) tasksSection.style.display = "block";
+    loadTeamTasks("all");
+    navLinks[2].classList.add("active");
   }
 }
 
@@ -361,6 +364,43 @@ async function loadAvailableEmployees() {
   }
 }
 
+async function loadTeamMembersForTaskAssign() {
+  try {
+    const response = await apiRequest("/manager/team-members");
+
+    if (!response.success) {
+      notifyError("Failed to load team members");
+      return;
+    }
+
+    const teamMembers = response.data || [];
+    const select = document.getElementById("taskEmployeeSelect");
+
+    if (!select) return;
+
+    if (teamMembers.length === 0) {
+      select.innerHTML = `<option value="">No team members available</option>`;
+      return;
+    }
+
+    select.innerHTML = `
+      <option value="">Select team member...</option>
+      ${teamMembers
+        .map(
+          (emp) => `
+        <option value="${emp.id}">
+          ${emp.firstname} ${emp.lastname}
+        </option>
+      `,
+        )
+        .join("")}
+    `;
+  } catch (error) {
+    notifyError("Error loading team members");
+    console.error(error);
+  }
+}
+
 async function addTeamMember(formData) {
   const form = document.getElementById("addTeamMemberForm");
 
@@ -465,6 +505,23 @@ function setupEventListeners() {
     observer.observe(addTeamMemberModal, { attributes: true });
   }
 
+  // Load team members when assign task modal opens
+  const assignTaskModal = document.getElementById("assignTaskModal");
+  if (assignTaskModal) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.attributeName === "style" &&
+          assignTaskModal.style.display !== "none"
+        ) {
+          loadTeamMembersForTaskAssign();
+        }
+      });
+    });
+
+    observer.observe(assignTaskModal, { attributes: true });
+  }
+
   // Logout
   const logoutBtn = document.querySelector(".logout-btn");
   if (logoutBtn) {
@@ -484,3 +541,214 @@ function setupAutoRefresh() {
   // Refresh stats every 5 minutes
   setInterval(loadTeamStats, 5 * 60 * 1000);
 }
+
+// ======================= TASK MANAGEMENT =======================
+
+async function loadTeamTasks(filter = "all") {
+  try {
+    showLoader("Loading tasks...");
+    const response = await apiRequest("/tasks/manager/team");
+    hideLoader();
+
+    if (!response.success) {
+      notifyError(response.message || "Failed to load tasks");
+      return;
+    }
+
+    let tasks = response.data || [];
+
+    // Filter tasks
+    if (filter !== "all") {
+      tasks = tasks.filter((task) => task.status === filter);
+    }
+
+    renderTasksTable(tasks);
+  } catch (error) {
+    hideLoader();
+    notifyError("Error loading tasks");
+    console.error(error);
+  }
+}
+
+function renderTasksTable(tasks) {
+  const tbody = document.getElementById("tasksTableBody");
+  if (!tbody) return;
+
+  if (!tasks || tasks.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="padding: 20px; text-align: center; color: #8b949e;">
+          No tasks found
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = tasks
+    .map(
+      (task) => `
+    <tr style="border-bottom: 1px solid #30363d;">
+      <td style="padding: 12px;">
+        <strong>${task.title}</strong>
+        ${task.description ? `<div style="font-size: 12px; color: #8b949e; margin-top: 4px;">${task.description}</div>` : ""}
+      </td>
+      <td style="padding: 12px;">${task.firstname} ${task.lastname}</td>
+      <td style="padding: 12px;">
+        <span class="badge ${getPriorityClass(task.priority)}">
+          ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+        </span>
+      </td>
+      <td style="padding: 12px;">
+        ${task.deadline ? new Date(task.deadline).toLocaleDateString() : "No deadline"}
+      </td>
+      <td style="padding: 12px;">
+        <span class="badge ${getTaskStatusClass(task.status)}">
+          ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+        </span>
+      </td>
+      <td style="padding: 12px; text-align: center;">
+        <button class="btn btn-secondary" onclick="editTask(${task.id})" style="padding: 4px 8px; font-size: 11px; margin-right: 4px;">
+          Edit
+        </button>
+        <button class="btn btn-warning" onclick="deleteTask(${task.id}, '${task.title}')" style="padding: 4px 8px; font-size: 11px;">
+          Delete
+        </button>
+      </td>
+    </tr>
+  `,
+    )
+    .join("");
+}
+
+function getPriorityClass(priority) {
+  switch (priority) {
+    case "high":
+      return "priority-high";
+    case "medium":
+      return "priority-medium";
+    case "low":
+      return "priority-low";
+    default:
+      return "priority-medium";
+  }
+}
+
+function getTaskStatusClass(status) {
+  switch (status) {
+    case "completed":
+      return "success";
+    case "active":
+      return "active";
+    case "pending":
+      return "warning";
+    default:
+      return "secondary";
+  }
+}
+
+async function openAssignTaskModal() {
+  try {
+    showLoader("Loading team members...");
+
+    const response = await apiRequest("/manager/available-employees");
+    hideLoader();
+
+    if (!response.success) {
+      notifyError("Failed to load team members");
+      return;
+    }
+
+    const select = document.getElementById("taskEmployeeSelect");
+    select.innerHTML = '<option value="">Select team member...</option>';
+
+    response.data.forEach((employee) => {
+      const option = document.createElement("option");
+      option.value = employee.id;
+      option.textContent = `${employee.firstname} ${employee.lastname}`;
+      select.appendChild(option);
+    });
+
+    openModal("assignTaskModal");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error loading team members");
+    console.error(error);
+  }
+}
+
+async function assignTask(formData) {
+  try {
+    showLoader("Assigning task...");
+
+    const data = {
+      employee_id: parseInt(formData.get("employee_id")),
+      title: formData.get("title"),
+      description: formData.get("description"),
+      priority: formData.get("priority") || "medium",
+      deadline: formData.get("deadline") || null,
+    };
+
+    const response = await apiRequest("/tasks/manager/create", "POST", data);
+    hideLoader();
+
+    if (!response.success) {
+      notifyError(response.message || "Failed to assign task");
+      return;
+    }
+
+    closeModal("assignTaskModal");
+    document.getElementById("assignTaskForm").reset();
+    await loadTeamTasks("all");
+    notifySuccess("Task assigned successfully");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error assigning task");
+    console.error(error);
+  }
+}
+
+async function editTask(taskId) {
+  // Placeholder for edit functionality
+  notifyError("Edit task feature coming soon");
+}
+
+async function deleteTask(taskId, taskTitle) {
+  const confirmed = await confirmDialog(
+    `Delete task "${taskTitle}"?`,
+    "Delete Task",
+  );
+
+  if (!confirmed) return;
+
+  try {
+    showLoader("Deleting task...");
+
+    const response = await apiRequest(`/tasks/manager/${taskId}`, "DELETE");
+    hideLoader();
+
+    if (!response.success) {
+      notifyError(response.message || "Failed to delete task");
+      return;
+    }
+
+    await loadTeamTasks("all");
+    notifySuccess("Task deleted successfully");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error deleting task");
+    console.error(error);
+  }
+}
+
+// Setup task form submission
+document.addEventListener("DOMContentLoaded", () => {
+  const assignTaskForm = document.getElementById("assignTaskForm");
+  if (assignTaskForm) {
+    assignTaskForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(assignTaskForm);
+      await assignTask(formData);
+    };
+  }
+});

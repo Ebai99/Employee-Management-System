@@ -1,7 +1,9 @@
 # Manager Team Section Implementation
 
 ## Overview
+
 The Manager Dashboard now includes a complete **Team Section** that allows managers to:
+
 1. View all team members in their department
 2. Add employees from their department to their team
 3. Remove team members from their team
@@ -10,6 +12,7 @@ The Manager Dashboard now includes a complete **Team Section** that allows manag
 ## Database Schema
 
 ### New Table: `team_members`
+
 ```sql
 CREATE TABLE team_members (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -25,6 +28,7 @@ CREATE TABLE team_members (
 ## Backend Implementation
 
 ### Models
+
 - **TeamMember.js** - Handles all database operations for team members:
   - `addTeamMember(managerId, employeeId)` - Add employee to manager's team
   - `removeTeamMember(managerId, employeeId)` - Remove from team
@@ -33,12 +37,14 @@ CREATE TABLE team_members (
   - `getManagerDepartment(managerId)` - Get manager's department
 
 ### Services
+
 - **ManagerService** - Business logic:
   - Validates employees are in the same department
   - Coordinates database operations
   - Manages error handling
 
 ### Controllers
+
 - **ManagerController** - HTTP endpoints:
   - `getTeamMembers()` - Returns manager's team members
   - `getAvailableEmployees()` - Returns employees available to add
@@ -46,6 +52,7 @@ CREATE TABLE team_members (
   - `removeTeamMember()` - Removes employee from team
 
 ### Routes
+
 ```
 GET  /manager/team-members              - Get team members
 GET  /manager/available-employees       - Get available employees
@@ -56,6 +63,7 @@ DELETE /manager/team-members/:employeeId - Remove team member
 ## Frontend Implementation
 
 ### HTML
+
 - **Manager Dashboard** (`manager/dashboard.html`):
   - Added "My Team" navigation link that switches to team section
   - Team Section with:
@@ -65,7 +73,9 @@ DELETE /manager/team-members/:employeeId - Remove team member
   - Modal for selecting and adding employees
 
 ### JavaScript (`manager/script.js`)
+
 New functions:
+
 - `switchSection(section, event)` - Navigate between dashboard and team sections
 - `loadTeamMembersTable()` - Load and display team members
 - `loadAvailableEmployees()` - Load available employees for selection
@@ -75,7 +85,9 @@ New functions:
 - `getStatusClass(status)` - Get CSS class for status badge
 
 ### Styling (`manager/style.css`)
+
 New CSS classes:
+
 - `.badge`, `.badge-success`, `.badge-danger`, `.badge-warning`, `.badge-secondary` - Status indicators
 - `.modal`, `.modal-content`, `.modal-header`, `.close-btn` - Modal styling
 - `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger` - Button styles
@@ -83,6 +95,7 @@ New CSS classes:
 ## How to Use
 
 ### For Managers
+
 1. Navigate to "My Team" in the sidebar
 2. Click "+ Add Team Member" button
 3. Select an employee from the same department
@@ -90,6 +103,7 @@ New CSS classes:
 5. To remove a member, click the "Remove" button next to their name
 
 ### Features
+
 - Only shows employees from the manager's department
 - Prevents duplicate team members
 - Shows team member status (ACTIVE, INACTIVE, SUSPENDED)
@@ -111,14 +125,16 @@ New CSS classes:
 To test the feature:
 
 1. **Create test data**:
+
    ```sql
    -- Verify managers and employees exist in same department
-   SELECT * FROM employees 
-   WHERE department = 'Engineering' 
+   SELECT * FROM employees
+   WHERE department = 'Engineering'
    AND role IN ('MANAGER', 'EMPLOYEE');
    ```
 
 2. **Test endpoints**:
+
    ```bash
    # Get available employees
    curl -H "Authorization: Bearer TOKEN" \
@@ -150,8 +166,9 @@ To test the feature:
 ## Database Querying
 
 ### View all team members
+
 ```sql
-SELECT 
+SELECT
   e.firstname, e.lastname, e.email, e.department, tm.assigned_date
 FROM team_members tm
 JOIN employees e ON tm.employee_id = e.id
@@ -159,9 +176,10 @@ WHERE tm.manager_id = ?;
 ```
 
 ### View available employees for a manager
+
 ```sql
-SELECT 
-  e.firstname, e.lastname, e.email, 
+SELECT
+  e.firstname, e.lastname, e.email,
   CASE WHEN tm.employee_id IS NOT NULL THEN 'In Team' ELSE 'Available' END as status
 FROM employees e
 LEFT JOIN team_members tm ON e.id = tm.employee_id
@@ -169,6 +187,7 @@ WHERE e.department = ? AND e.role = 'EMPLOYEE' AND e.status = 'ACTIVE';
 ```
 
 ## Notes
+
 - Team members are stored in a separate `team_members` table
 - All team members must be from the manager's department
 - Managers can only have each employee once (UNIQUE constraint)

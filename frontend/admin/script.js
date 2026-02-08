@@ -73,20 +73,23 @@ function switchSection(section, event) {
 
 function updateUserInfo() {
   const userStr = localStorage.getItem("user");
-  
+
   if (userStr) {
     try {
       const user = JSON.parse(userStr);
       const nameElement = document.querySelector(".user-info .name");
       if (nameElement) {
-        const fullName = `${user.firstname || ""} ${user.lastname || ""}`.trim();
+        const fullName =
+          `${user.firstname || ""} ${user.lastname || ""}`.trim();
         nameElement.textContent = fullName || user.email || "Admin";
       }
-      
+
       // Update avatar with initials
       const avatar = document.querySelector(".user-profile .avatar");
       if (avatar && user.firstname && user.lastname) {
-        avatar.textContent = (user.firstname[0] + user.lastname[0]).toUpperCase();
+        avatar.textContent = (
+          user.firstname[0] + user.lastname[0]
+        ).toUpperCase();
       }
     } catch (e) {
       console.error("Error parsing user info:", e);
@@ -1056,7 +1059,7 @@ async function editManager(managerCode) {
 
     // Store the manager code in the hidden field
     document.getElementById("managerCode").value = managerCode;
-    
+
     document.getElementById("mFirstName").value = manager.firstname || "";
     document.getElementById("mLastName").value = manager.lastname || "";
     document.getElementById("mEmail").value = manager.email || "";

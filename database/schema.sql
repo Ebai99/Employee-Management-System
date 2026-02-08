@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS  breaks (
 
 CREATE TABLE IF NOT EXISTS tasks (
   id INT PRIMARY KEY AUTO_INCREMENT,
+  manager_id INT,
   employee_id INT NOT NULL,
   title VARCHAR(255) NOT NULL,
   description TEXT,
@@ -75,6 +76,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   status ENUM('pending','active','completed') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (manager_id) REFERENCES employees(id),
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
 

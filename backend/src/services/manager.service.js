@@ -32,12 +32,15 @@ class ManagerService {
   static async getAvailableEmployees(managerId) {
     // Get manager's department first
     const managerInfo = await TeamMember.getManagerDepartment(managerId);
-    
+
     if (!managerInfo) {
       throw new Error("Manager not found");
     }
 
-    return await TeamMember.getAvailableEmployees(managerId, managerInfo.department);
+    return await TeamMember.getAvailableEmployees(
+      managerId,
+      managerInfo.department,
+    );
   }
 
   static async addTeamMember(managerId, employeeId) {
@@ -61,4 +64,3 @@ class ManagerService {
 }
 
 module.exports = ManagerService;
-

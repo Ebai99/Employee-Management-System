@@ -5,7 +5,8 @@ const AdminService = require("../services/admin.service");
 class AdminController {
   static async createEmployee(req, res, next) {
     try {
-      const { firstname, lastname, email, telephone, address, department } = req.body;
+      const { firstname, lastname, email, telephone, address, department } =
+        req.body;
 
       // generate employee code
       const employeeCode = `EMP-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
@@ -46,7 +47,8 @@ class AdminController {
 
   static async createManager(req, res, next) {
     try {
-      const { firstname, lastname, email, telephone, address, department } = req.body;
+      const { firstname, lastname, email, telephone, address, department } =
+        req.body;
 
       // generate manager code
       const managerCode = `MGR-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
@@ -189,7 +191,8 @@ class AdminController {
   static async updateEmployee(req, res, next) {
     try {
       const { employee_code } = req.params;
-      const { firstname, lastname, email, telephone, address, department } = req.body;
+      const { firstname, lastname, email, telephone, address, department } =
+        req.body;
 
       const updated = await Employee.update(employee_code, {
         firstname,

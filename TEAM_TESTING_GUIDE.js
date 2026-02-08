@@ -208,15 +208,12 @@ is running. All components are in place. Ready to test!
 // Export for use in other scripts if needed
 module.exports = {
   testEndpoints: [
-    'GET /manager/team-members',
-    'GET /manager/available-employees',
-    'POST /manager/team-members',
-    'DELETE /manager/team-members/:employeeId'
+    "GET /manager/team-members",
+    "GET /manager/available-employees",
+    "POST /manager/team-members",
+    "DELETE /manager/team-members/:employeeId",
   ],
-  requiredTables: [
-    'team_members',
-    'employees'
-  ],
+  requiredTables: ["team_members", "employees"],
   requiredEndpoints: 4,
-  status: 'READY'
+  status: "READY",
 };

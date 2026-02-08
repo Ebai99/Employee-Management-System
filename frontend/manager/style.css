@@ -513,6 +513,43 @@ body {
   color: #9ca3af;
 }
 
+/* Priority Badge Styles */
+.badge.priority-high {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
+
+.badge.priority-medium {
+  background: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+}
+
+.badge.priority-low {
+  background: rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
+/* Status Badge Styles */
+.badge.success {
+  background: rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
+.badge.active {
+  background: rgba(59, 130, 246, 0.25);
+  color: #3b82f6;
+}
+
+.badge.warning {
+  background: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+}
+
+.badge.secondary {
+  background: rgba(75, 85, 99, 0.25);
+  color: #9ca3af;
+}
+
 /* Modal Styles */
 .modal {
   display: none !important;

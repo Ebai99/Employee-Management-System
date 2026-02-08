@@ -63,14 +63,10 @@ class Employee {
     return result.affectedRows || 0;
   }
 
-  static async update(employeeCode, {
-    firstname,
-    lastname,
-    email,
-    telephone,
-    address,
-    department,
-  }) {
+  static async update(
+    employeeCode,
+    { firstname, lastname, email, telephone, address, department },
+  ) {
     const sql = `
       UPDATE employees 
       SET firstname = ?, lastname = ?, email = ?, telephone = ?, address = ?, department = ?
