@@ -4,6 +4,32 @@ let tasksData = [];
 let attendanceData = {};
 let timerIntervals = {};
 let employeeCharts = {};
+let notifications = [];
+let previousTasksCount = 0;
+let notificationCheckInterval = null;
+
+// ======================= HELPER FUNCTIONS =======================
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hours}h ${minutes}m ${secs}s`;
+}
+
+function formatClockTime(dateString) {
+  const date = new Date(dateString);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function formatDateDisplay(date) {
+  if (!date) return "No deadline";
+  const d = new Date(date);
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${d.getDate()} ${month[d.getMonth()]} ${d.getFullYear()}`;
+}
 
 // ======================= INITIALIZATION =======================
 
@@ -24,6 +50,11 @@ async function initDashboard() {
   try {
     showLoader("Loading dashboard...");
 
+    // Load notifications from storage
+    loadNotifications();
+    updateNotificationBadge();
+    updateNotificationsPanel();
+
     // Load all dashboard data
     await Promise.all([
       loadAttendanceStatus(),
@@ -34,6 +65,19 @@ async function initDashboard() {
     ]);
 
     updateUserInfo();
+    console.log("Dashboard initialization complete, tasksData:", tasksData);
+    console.log("Calling renderTasks with tasksData...");
+    renderTasks(tasksData); // Explicitly call renderTasks again to ensure it renders
+    
+    // Restore break timer if user was on break
+    const breakStartTime = localStorage.getItem("breakStartTime");
+    if (breakStartTime) {
+      startBreakTimer(breakStartTime);
+    }
+    
+    // Set initial task count for notifications
+    previousTasksCount = tasksData.length;
+    
     hideLoader();
   } catch (error) {
     hideLoader();
@@ -69,37 +113,76 @@ function updateUserInfo() {
 
 async function loadAttendanceStatus() {
   try {
-    // Get status from localStorage since no API endpoint exists
-    const clockInTime = localStorage.getItem("clockInTime");
-    const status = clockInTime ? "CLOCKED_IN" : "NOT_CLOCKED_IN";
+    // Get today's attendance record from API
+    const response = await apiRequest("/attendance/today");
+    
+    if (!response.success || !response.data) {
+      // No active session
+      attendanceData = { status: "NOT_CLOCKED_IN" };
+    } else {
+      attendanceData = response.data;
+    }
 
-    attendanceData = { status, clock_in_time: clockInTime };
+    const clockInTime = attendanceData.clock_in;
+    const clockOutTime = attendanceData.clock_out;
+    const totalHours = attendanceData.total_hours;
 
     // Update UI
     const statusEl = document.getElementById("attendanceStatus");
-    if (statusEl) {
-      statusEl.textContent = status === "CLOCKED_IN" ? "Clocked In" : "Not Clocked In";
-      statusEl.className =
-        "badge " +
-        (status === "CLOCKED_IN" ? "active" : "inactive");
-    }
-
-    // Update button states
+    const hoursEl = document.getElementById("hoursWorked");
     const clockInBtn = document.getElementById("clockInBtn");
     const clockOutBtn = document.getElementById("clockOutBtn");
 
-    if (clockInBtn && clockOutBtn) {
-      if (status === "CLOCKED_IN") {
-        clockInBtn.disabled = true;
-        clockOutBtn.disabled = false;
+    if (statusEl) {
+      if (clockOutTime) {
+        // Clocked out - show total hours
+        statusEl.textContent = "Clocked Out";
+        statusEl.className = "badge inactive";
+        if (hoursEl) hoursEl.textContent = `${totalHours ? totalHours.toFixed(2) : '0'} hours worked`;
+      } else if (clockInTime) {
+        // Currently clocked in
+        statusEl.textContent = "Clocked In";
+        statusEl.className = "badge active";
+        if (hoursEl) hoursEl.textContent = `Since ${formatClockTime(clockInTime)}`;
+        
+        // Start time tracker
         startTimeTracker(clockInTime);
       } else {
+        // Not clocked in
+        statusEl.textContent = "Not Clocked In";
+        statusEl.className = "badge inactive";
+        if (hoursEl) hoursEl.textContent = "0 hours worked";
+      }
+    }
+
+    // Update button states
+    if (clockInBtn && clockOutBtn) {
+      if (clockInTime && !clockOutTime) {
+        // Clocked in
+        clockInBtn.disabled = true;
+        clockOutBtn.disabled = false;
+      } else {
+        // Not clocked in or already clocked out
         clockInBtn.disabled = false;
         clockOutBtn.disabled = true;
       }
     }
   } catch (error) {
     console.error("Error loading attendance status:", error);
+    attendanceData = { status: "NOT_CLOCKED_IN" };
+    
+    // Fallback to localStorage
+    const clockInTime = localStorage.getItem("clockInTime");
+    if (clockInTime) {
+      const statusEl = document.getElementById("attendanceStatus");
+      const hoursEl = document.getElementById("hoursWorked");
+      if (statusEl) {
+        statusEl.textContent = "Clocked In";
+        statusEl.className = "badge active";
+      }
+      if (hoursEl) hoursEl.textContent = `Since ${formatClockTime(clockInTime)}`;
+      startTimeTracker(clockInTime);
+    }
   }
 }
 
@@ -166,6 +249,24 @@ function startTimeTracker(clockInTime) {
   timerIntervals.attendance = setInterval(updateTime, 1000);
 }
 
+function startBreakTimer(breakStartTime) {
+  if (!breakStartTime) return;
+
+  const updateBreakTime = () => {
+    const elapsed = Math.floor((new Date() - new Date(breakStartTime)) / 1000);
+    const breakChangeEl = document.querySelector(".kpi-content .change");
+    const breakStatusEl = document.getElementById("breakStatus");
+    
+    if (breakStatusEl) {
+      breakStatusEl.textContent = "On Break";
+    }
+  };
+
+  updateBreakTime();
+  if (timerIntervals.break) clearInterval(timerIntervals.break);
+  timerIntervals.break = setInterval(updateBreakTime, 1000);
+}
+
 // ======================= BREAK MANAGEMENT =======================
 
 async function startBreak() {
@@ -181,9 +282,14 @@ async function startBreak() {
     }
 
     const breakStatus = document.getElementById("breakStatus");
-    if (breakStatus) breakStatus.textContent = "On Break";
+    if (breakStatus) {
+      breakStatus.textContent = "On Break";
+      breakStatus.style.background = "#d97706";
+    }
     
-    localStorage.setItem("breakStartTime", new Date().toISOString());
+    const breakStartTime = new Date().toISOString();
+    localStorage.setItem("breakStartTime", breakStartTime);
+    startBreakTimer(breakStartTime);
     notifySuccess("Break started!");
   } catch (error) {
     hideLoader();
@@ -205,10 +311,20 @@ async function endBreak() {
     }
 
     const breakStatus = document.getElementById("breakStatus");
-    if (breakStatus) breakStatus.textContent = "Working";
+    if (breakStatus) {
+      breakStatus.textContent = "Working";
+      breakStatus.style.background = "#21262d";
+    }
     
     localStorage.removeItem("breakStartTime");
+    if (timerIntervals.break) {
+      clearInterval(timerIntervals.break);
+      timerIntervals.break = null;
+    }
     notifySuccess("Break ended!");
+    
+    // Reload break history to update the display
+    await loadBreakHistory();
   } catch (error) {
     hideLoader();
     notifyError("Error ending break");
@@ -218,9 +334,13 @@ async function endBreak() {
 
 async function loadBreakHistory() {
   try {
-    const response = await apiRequest("/employee/breaks/history");
+    const response = await apiRequest("/breaks/employee/history");
 
-    if (!response.success) return;
+    if (!response.success) {
+      // Gracefully handle 404 or other errors
+      console.debug("Break history not available:", response.status);
+      return;
+    }
 
     const container = document.getElementById("breakHistory");
     if (!container || !response.data) return;
@@ -242,9 +362,16 @@ async function loadBreakHistory() {
       `,
         )
         .join("");
+    } else {
+      // Show message when no breaks exist
+      const container = document.getElementById("breakHistory");
+      if (container) {
+        container.innerHTML = '<p style="color: #8b949e; font-size: 12px;">No breaks recorded today</p>';
+      }
     }
   } catch (error) {
-    console.error("Error loading break history:", error);
+    // Silently handle errors for optional endpoint
+    console.debug("Break history error (expected if endpoint not available):", error.message);
   }
 }
 
@@ -265,6 +392,9 @@ async function loadMyTasks(filter = "all") {
     tasksData = response.data || [];
     console.log("Tasks loaded:", tasksData);
     
+    // Check for new tasks and send notifications
+    checkForNewTasks();
+    
     // Filter tasks based on status
     let filteredTasks = tasksData;
     if (filter === "pending") {
@@ -282,13 +412,6 @@ async function loadMyTasks(filter = "all") {
     tasksData = [];
     renderTasks([]);
   }
-}
-
-function formatDateDisplay(date) {
-  if (!date) return "No deadline";
-  const d = new Date(date);
-  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${d.getDate()} ${month[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function getTaskStatusBadgeClass(status) {
@@ -317,15 +440,22 @@ function getPriorityBadgeClass(priority) {
 
 function renderTasks(tasks = tasksData) {
   const container = document.getElementById("taskList");
-  if (!container) return;
+  console.log("renderTasks called with tasks:", tasks);
+  console.log("taskList container found:", !!container);
+  
+  if (!container) {
+    console.error("taskList container not found in DOM!");
+    return;
+  }
 
   if (!tasks || tasks.length === 0) {
+    console.log("No tasks to display, showing empty message");
     container.innerHTML =
       '<p class="text-center" style="color: #8b949e; padding: 20px;">No tasks assigned</p>';
     return;
   }
 
-  container.innerHTML = tasks
+  const html = tasks
     .map(
       (task) => {
         const priority = (task.priority || "medium").toLowerCase();
@@ -366,6 +496,11 @@ function renderTasks(tasks = tasksData) {
       }
     )
     .join("");
+  
+  console.log("Generated HTML length:", html.length);
+  console.log("Setting container innerHTML...");
+  container.innerHTML = html;
+  console.log("Container innerHTML set successfully!");
 }
 
 async function startTask(taskId) {
@@ -504,4 +639,222 @@ function setupAutoRefresh() {
 
   // Refresh tasks every 5 minutes
   setInterval(loadMyTasks, 5 * 60 * 1000);
+
+  // Check for new task notifications every 30 seconds
+  notificationCheckInterval = setInterval(checkForNewTasks, 30000);
 }
+
+// ======================= NOTIFICATIONS =======================
+
+async function checkForNewTasks() {
+  try {
+    // Get current task count
+    const currentCount = tasksData.length;
+    const newUncompletedTasks = tasksData.filter(t => t.status !== 'COMPLETED');
+    
+    // Check if there are new tasks
+    if (currentCount > previousTasksCount) {
+      const newTaskCount = currentCount - previousTasksCount;
+      const newTasks = newUncompletedTasks.slice(0, newTaskCount);
+      
+      // Add notification for each new task
+      newTasks.forEach(task => {
+        addNotification({
+          id: `task-${task.id}`,
+          type: 'task',
+          title: 'New Task Assigned',
+          message: `"${task.title}" assigned by ${task.firstname || 'Your Manager'}`,
+          timestamp: new Date(),
+          taskId: task.id,
+          read: false
+        });
+      });
+      
+      // Show toast notification
+      showNotificationToast(`${newTaskCount} new task${newTaskCount > 1 ? 's' : ''} assigned!`);
+    }
+    
+    previousTasksCount = currentCount;
+  } catch (error) {
+    console.error('Error checking for new tasks:', error);
+  }
+}
+
+function addNotification(notification) {
+  notifications.unshift(notification);
+  
+  // Keep only last 50 notifications
+  if (notifications.length > 50) {
+    notifications = notifications.slice(0, 50);
+  }
+  
+  // Save to localStorage
+  saveNotifications();
+  
+  // Update badge
+  updateNotificationBadge();
+  
+  // Update notifications panel if open
+  updateNotificationsPanel();
+}
+
+function saveNotifications() {
+  try {
+    localStorage.setItem('employeeNotifications', JSON.stringify(notifications));
+  } catch (error) {
+    console.error('Error saving notifications:', error);
+  }
+}
+
+function loadNotifications() {
+  try {
+    const saved = localStorage.getItem('employeeNotifications');
+    if (saved) {
+      notifications = JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+    notifications = [];
+  }
+}
+
+function updateNotificationBadge() {
+  const badge = document.getElementById('notificationBadge');
+  const unreadCount = notifications.filter(n => !n.read).length;
+  
+  if (badge) {
+    if (unreadCount > 0) {
+      badge.style.display = 'block';
+      badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+function toggleNotifications() {
+  const panel = document.getElementById('notificationsPanel');
+  if (panel) {
+    const isVisible = panel.style.display === 'block';
+    panel.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+      // Mark all as read when opening panel
+      notifications.forEach(n => n.read = true);
+      saveNotifications();
+      updateNotificationBadge();
+      updateNotificationsPanel();
+    }
+  }
+}
+
+function updateNotificationsPanel() {
+  const list = document.getElementById('notificationsList');
+  if (!list) return;
+  
+  if (notifications.length === 0) {
+    list.innerHTML = '<div style="padding: 32px 16px; text-align: center; color: #8b949e; font-size: 14px;">No notifications yet</div>';
+    return;
+  }
+  
+  list.innerHTML = notifications.map(notification => `
+    <div style="
+      padding: 12px 16px;
+      border-bottom: 1px solid #21262d;
+      cursor: pointer;
+      transition: background 0.2s;
+      background: ${notification.read ? 'transparent' : 'rgba(79, 195, 247, 0.1)'};
+    " onmouseover="this.style.background='#161b22'" onmouseout="this.style.background='${notification.read ? 'transparent' : 'rgba(79, 195, 247, 0.1)'}'">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+        <strong style="font-size: 14px; color: #fff;">${notification.title}</strong>
+        ${notification.type === 'task' ? '<span style="background: #238636; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">TASK</span>' : ''}
+      </div>
+      <p style="margin: 0; font-size: 13px; color: #8b949e;">${notification.message}</p>
+      <p style="margin: 6px 0 0 0; font-size: 12px; color: #6e7681;">${formatNotificationTime(notification.timestamp)}</p>
+    </div>
+  `).join('');
+}
+
+function formatNotificationTime(timestamp) {
+  const now = new Date();
+  const date = new Date(timestamp);
+  const diff = now - date;
+  
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  
+  return date.toLocaleDateString();
+}
+
+function clearAllNotifications() {
+  notifications = [];
+  saveNotifications();
+  updateNotificationBadge();
+  updateNotificationsPanel();
+}
+
+function showNotificationToast(message) {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #238636 0%, #1f6feb 100%);
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+    z-index: 10000;
+    max-width: 300px;
+  `;
+  
+  toast.textContent = message;
+  
+  // Add animation keyframes if not already present
+  if (!document.getElementById('toastStyles')) {
+    const style = document.createElement('style');
+    style.id = 'toastStyles';
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  document.body.appendChild(toast);
+  
+  // Remove after 4 seconds
+  setTimeout(() => {
+    toast.style.animation = 'slideIn 0.3s ease-out reverse';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+// Close notifications panel when clicking outside
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('notificationsPanel');
+  const btn = document.querySelector('.notification-btn');
+  
+  if (panel && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+});
+

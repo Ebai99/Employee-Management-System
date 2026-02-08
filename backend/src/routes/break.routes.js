@@ -13,4 +13,8 @@ router.post("/end", auth, authorize(roles.EMPLOYEE), (req, res, next) =>
   BreakController.end(req, res, next),
 );
 
+router.get("/employee/history", auth, authorize(roles.EMPLOYEE), (req, res, next) =>
+  BreakController.getHistory(req, res, next),
+);
+
 module.exports = router;

@@ -18,4 +18,8 @@ router.post("/clock-out", auth, authorize(roles.EMPLOYEE), (req, res, next) =>
   AttendanceController.clockOut(req, res, next),
 );
 
+router.get("/today", auth, authorize(roles.EMPLOYEE), (req, res, next) =>
+  AttendanceController.getToday(req, res, next),
+);
+
 module.exports = router;

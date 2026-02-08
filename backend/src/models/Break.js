@@ -32,6 +32,23 @@ class Break {
     const result = await query(sql, [employeeId]);
     return result.affectedRows || 0;
   }
+
+  static async getHistory(employeeId, limit = 10) {
+    const sql = `
+      SELECT 
+        id,
+        employee_id,
+        break_start,
+        break_end,
+        duration_minutes
+      FROM breaks
+      WHERE employee_id = ?
+      ORDER BY break_start DESC
+      LIMIT ?
+    `;
+    const rows = await query(sql, [employeeId, limit]);
+    return rows || [];
+  }
 }
 
 module.exports = Break;
