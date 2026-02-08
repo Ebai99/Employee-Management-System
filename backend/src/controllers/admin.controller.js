@@ -5,7 +5,7 @@ const AdminService = require("../services/admin.service");
 class AdminController {
   static async createEmployee(req, res, next) {
     try {
-      const { firstname, lastname, email } = req.body;
+      const { firstname, lastname, email, telephone, address, department } = req.body;
 
       // generate employee code
       const employeeCode = `EMP-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
@@ -20,6 +20,9 @@ class AdminController {
         firstname,
         lastname,
         email,
+        telephone,
+        address,
+        department,
         accessCodeHash: hashedCode,
         createdBy: req.user ? req.user.id : null,
       });
@@ -43,7 +46,7 @@ class AdminController {
 
   static async createManager(req, res, next) {
     try {
-      const { firstname, lastname, email } = req.body;
+      const { firstname, lastname, email, telephone, address, department } = req.body;
 
       // generate manager code
       const managerCode = `MGR-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
@@ -58,6 +61,9 @@ class AdminController {
         firstname,
         lastname,
         email,
+        telephone,
+        address,
+        department,
         accessCodeHash: hashedCode,
         createdBy: req.user ? req.user.id : null,
         role: "MANAGER",
@@ -90,6 +96,31 @@ class AdminController {
           ...e,
           fullname: `${e.firstname} ${e.lastname}`,
         })),
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getEmployeeByCode(req, res, next) {
+    try {
+      const { employee_code } = req.params;
+
+      const employee = await Employee.findByCode(employee_code);
+
+      if (!employee) {
+        return res.status(404).json({
+          success: false,
+          message: "Employee not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...employee,
+          fullname: `${employee.firstname} ${employee.lastname}`,
+        },
       });
     } catch (err) {
       next(err);
@@ -152,6 +183,36 @@ class AdminController {
       });
     } catch (error) {
       next(error);
+    }
+  }
+
+  static async updateEmployee(req, res, next) {
+    try {
+      const { employee_code } = req.params;
+      const { firstname, lastname, email, telephone, address, department } = req.body;
+
+      const updated = await Employee.update(employee_code, {
+        firstname,
+        lastname,
+        email,
+        telephone,
+        address,
+        department,
+      });
+
+      if (!updated) {
+        return res.status(404).json({
+          success: false,
+          message: "Employee not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Employee updated successfully",
+      });
+    } catch (err) {
+      next(err);
     }
   }
 }

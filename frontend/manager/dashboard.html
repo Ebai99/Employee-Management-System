@@ -25,10 +25,10 @@
         </div>
 
         <nav class="sidebar-nav" id="sidebarNav">
-          <a href="#" class="nav-link active">
+          <a href="#" class="nav-link active" onclick="switchSection('dashboard', event)">
             <span class="icon">◈</span> Dashboard
           </a>
-          <a href="#" class="nav-link">
+          <a href="#" class="nav-link" onclick="switchSection('team', event)">
             <span class="icon">👥</span> My Team
           </a>
           <a href="#" class="nav-link"> <span class="icon">✓</span> Tasks </a>
@@ -80,6 +80,8 @@
 
         <!-- Content -->
         <main class="content">
+          <!-- Dashboard Section -->
+          <div id="dashboardSection" style="display: block;">
           <!-- KPI Cards -->
           <div class="kpi-grid">
             <div class="kpi-card cyan">
@@ -283,7 +285,85 @@
             </div>
             <div id="teamTasksList"></div>
           </div>
+          </div>
+
+          <!-- Team Section -->
+          <div id="teamSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h2>My Team</h2>
+              <button class="btn btn-primary" onclick="openModal('addTeamMemberModal')" style="padding: 10px 16px;">
+                + Add Team Member
+              </button>
+            </div>
+
+            <div style="background: #0d1117; border: 1px solid #30363d; border-radius: 8px; overflow: hidden;">
+              <table class="team-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #161b22; border-bottom: 1px solid #30363d;">
+                    <th style="padding: 12px; text-align: left;">Name</th>
+                    <th style="padding: 12px; text-align: left;">Email</th>
+                    <th style="padding: 12px; text-align: left;">Telephone</th>
+                    <th style="padding: 12px; text-align: left;">Status</th>
+                    <th style="padding: 12px; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="teamMembersBody">
+                  <tr>
+                    <td colspan="5" style="padding: 20px; text-align: center; color: #8b949e;">
+                      No team members yet. Add your first team member.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </main>
+
+        <!-- Add Team Member Modal -->
+        <div id="addTeamMemberModal" class="modal">
+          <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+              <h2>Add Team Member</h2>
+              <button class="close-btn" onclick="closeModal('addTeamMemberModal')">&times;</button>
+            </div>
+            <form id="addTeamMemberForm" style="padding: 20px;">
+              <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; color: #c9d1d9;">
+                  Select Employee
+                </label>
+                <select
+                  id="employeeSelect"
+                  name="employeeId"
+                  required
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #30363d;
+                    border-radius: 6px;
+                    background: #161b22;
+                    color: #c9d1d9;
+                    cursor: pointer;
+                  "
+                >
+                  <option value="">Loading employees...</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                  Add to Team
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="closeModal('addTeamMemberModal')"
+                  style="flex: 1;"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
 

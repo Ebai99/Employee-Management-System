@@ -22,4 +22,34 @@ router.get(
   (req, res, next) => ManagerController.reports(req, res, next),
 );
 
+router.get(
+  "/team-members",
+  auth,
+  authorize(roles.MANAGER, roles.SUPER_ADMIN, roles.ADMIN),
+  (req, res, next) => ManagerController.getTeamMembers(req, res, next),
+);
+
+router.get(
+  "/available-employees",
+  auth,
+  authorize(roles.MANAGER, roles.SUPER_ADMIN, roles.ADMIN),
+  (req, res, next) => ManagerController.getAvailableEmployees(req, res, next),
+);
+
+router.post(
+  "/team-members",
+  auth,
+  authorize(roles.MANAGER, roles.SUPER_ADMIN, roles.ADMIN),
+  audit("ADD_TEAM_MEMBER", "employee"),
+  (req, res, next) => ManagerController.addTeamMember(req, res, next),
+);
+
+router.delete(
+  "/team-members/:employeeId",
+  auth,
+  authorize(roles.MANAGER, roles.SUPER_ADMIN, roles.ADMIN),
+  audit("REMOVE_TEAM_MEMBER", "employee"),
+  (req, res, next) => ManagerController.removeTeamMember(req, res, next),
+);
+
 module.exports = router;

@@ -72,13 +72,24 @@ function switchSection(section, event) {
 }
 
 function updateUserInfo() {
-  const token = getToken();
-  const payload = parseJwt(token);
-
-  if (payload) {
-    const nameElement = document.querySelector(".user-info .name");
-    if (nameElement) {
-      nameElement.textContent = payload.email || "Admin";
+  const userStr = localStorage.getItem("user");
+  
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      const nameElement = document.querySelector(".user-info .name");
+      if (nameElement) {
+        const fullName = `${user.firstname || ""} ${user.lastname || ""}`.trim();
+        nameElement.textContent = fullName || user.email || "Admin";
+      }
+      
+      // Update avatar with initials
+      const avatar = document.querySelector(".user-profile .avatar");
+      if (avatar && user.firstname && user.lastname) {
+        avatar.textContent = (user.firstname[0] + user.lastname[0]).toUpperCase();
+      }
+    } catch (e) {
+      console.error("Error parsing user info:", e);
     }
   }
 }
@@ -428,6 +439,8 @@ async function editEmployee(employeeCode) {
     document.getElementById("firstName").value = employee.firstname || "";
     document.getElementById("lastName").value = employee.lastname || "";
     document.getElementById("email").value = employee.email || "";
+    document.getElementById("telephone").value = employee.telephone || "";
+    document.getElementById("address").value = employee.address || "";
     document.getElementById("department").value = employee.department || "";
     document.getElementById("position").value = employee.position || "";
 
@@ -785,6 +798,7 @@ function setupEventListeners() {
   if (managerForm) {
     managerForm.onsubmit = async (e) => {
       e.preventDefault();
+      const managerCode = document.getElementById("managerCode").value;
       const formData = {
         firstname: document.getElementById("mFirstName").value,
         lastname: document.getElementById("mLastName").value,
@@ -793,7 +807,12 @@ function setupEventListeners() {
         address: document.getElementById("mAddress").value || null,
         department: document.getElementById("mDepartment").value || null,
       };
-      await createManager(formData);
+      // Check if we're editing or creating
+      if (managerCode) {
+        await updateManager(managerCode, formData);
+      } else {
+        await createManager(formData);
+      }
     };
   }
 
@@ -975,6 +994,7 @@ async function createManager(formData) {
     // Close modal and reload
     closeModal("createManagerModal");
     form.reset();
+    document.getElementById("managerCode").value = ""; // Clear the hidden field
     await loadManagers();
     await loadDashboardStats(); // Update KPI counts
 
@@ -1034,9 +1054,14 @@ async function editManager(managerCode) {
     const manager = response.data;
     const form = document.getElementById("managerForm");
 
+    // Store the manager code in the hidden field
+    document.getElementById("managerCode").value = managerCode;
+    
     document.getElementById("mFirstName").value = manager.firstname || "";
     document.getElementById("mLastName").value = manager.lastname || "";
     document.getElementById("mEmail").value = manager.email || "";
+    document.getElementById("mTelephone").value = manager.telephone || "";
+    document.getElementById("mAddress").value = manager.address || "";
     document.getElementById("mDepartment").value = manager.department || "";
     document.getElementById("mPosition").value = manager.position || "";
 
@@ -1044,6 +1069,49 @@ async function editManager(managerCode) {
   } catch (error) {
     hideLoader();
     notifyError("Error loading manager");
+    console.error(error);
+  }
+}
+
+async function updateManager(managerCode, formData) {
+  const form = document.getElementById("managerForm");
+
+  if (
+    !validateForm("managerForm", {
+      firstname: { required: false },
+      lastname: { required: false },
+      email: { required: true, email: true },
+      telephone: { required: true },
+      address: { required: true },
+    })
+  ) {
+    return;
+  }
+
+  try {
+    showLoader("Updating manager...");
+
+    const response = await apiRequest(
+      `/admin/employees/${managerCode}`,
+      "PUT",
+      formData,
+    );
+    hideLoader();
+
+    if (!response.success) {
+      notifyError(response.message || "Failed to update manager");
+      return;
+    }
+
+    // Close modal and reload
+    closeModal("createManagerModal");
+    form.reset();
+    document.getElementById("managerCode").value = ""; // Clear the hidden field
+    await loadManagers();
+    notifySuccess("Manager updated successfully");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error updating manager");
     console.error(error);
   }
 }

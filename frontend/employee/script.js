@@ -43,13 +43,24 @@ async function initDashboard() {
 }
 
 function updateUserInfo() {
-  const token = getToken();
-  const payload = parseJwt(token);
-
-  if (payload) {
-    const nameElement = document.querySelector(".user-info .name");
-    if (nameElement) {
-      nameElement.textContent = payload.employee_code || "Employee";
+  const userStr = localStorage.getItem("user");
+  
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      const nameElement = document.querySelector(".user-info .name");
+      if (nameElement) {
+        const fullName = `${user.firstname || ""} ${user.lastname || ""}`.trim();
+        nameElement.textContent = fullName || user.email || "Employee";
+      }
+      
+      // Update avatar with initials
+      const avatar = document.querySelector(".user-profile .avatar");
+      if (avatar && user.firstname && user.lastname) {
+        avatar.textContent = (user.firstname[0] + user.lastname[0]).toUpperCase();
+      }
+    } catch (e) {
+      console.error("Error parsing user info:", e);
     }
   }
 }

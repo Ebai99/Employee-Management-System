@@ -62,6 +62,31 @@ class Employee {
     );
     return result.affectedRows || 0;
   }
+
+  static async update(employeeCode, {
+    firstname,
+    lastname,
+    email,
+    telephone,
+    address,
+    department,
+  }) {
+    const sql = `
+      UPDATE employees 
+      SET firstname = ?, lastname = ?, email = ?, telephone = ?, address = ?, department = ?
+      WHERE employee_code = ?
+    `;
+    const result = await query(sql, [
+      firstname,
+      lastname,
+      email,
+      telephone || null,
+      address || null,
+      department || null,
+      employeeCode,
+    ]);
+    return result.affectedRows || 0;
+  }
 }
 
 module.exports = Employee;

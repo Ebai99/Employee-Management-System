@@ -45,6 +45,21 @@ router.get(
   (req, res, next) => AdminController.getAllEmployees(req, res, next),
 );
 
+router.get(
+  "/employees/:employee_code",
+  auth,
+  authorize(roles.ADMIN, roles.SUPER_ADMIN),
+  (req, res, next) => AdminController.getEmployeeByCode(req, res, next),
+);
+
+router.put(
+  "/employees/:employee_code",
+  auth,
+  authorize(roles.ADMIN, roles.SUPER_ADMIN),
+  audit("UPDATE_EMPLOYEE", "employee"),
+  (req, res, next) => AdminController.updateEmployee(req, res, next),
+);
+
 router.patch(
   "/employees/:employee_code/disable",
   auth,

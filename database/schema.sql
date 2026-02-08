@@ -108,3 +108,14 @@ CREATE TABLE IF NOT EXISTS performance_metrics (
   UNIQUE KEY uniq_emp_date (employee_id, metric_date),
   FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
+
+-- team_members mapping
+CREATE TABLE IF NOT EXISTS team_members (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  manager_id INT NOT NULL,
+  employee_id INT NOT NULL,
+  assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_manager_employee (manager_id, employee_id),
+  FOREIGN KEY (manager_id) REFERENCES employees(id),
+  FOREIGN KEY (employee_id) REFERENCES employees(id)
+);

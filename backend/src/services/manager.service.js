@@ -1,4 +1,5 @@
 const { query } = require("../utils/db.helper");
+const TeamMember = require("../models/TeamMember");
 
 class ManagerService {
   static async getTeam(managerId) {
@@ -23,6 +24,41 @@ class ManagerService {
       [managerId],
     );
   }
+
+  static async getTeamMembers(managerId) {
+    return await TeamMember.getTeamMembers(managerId);
+  }
+
+  static async getAvailableEmployees(managerId) {
+    // Get manager's department first
+    const managerInfo = await TeamMember.getManagerDepartment(managerId);
+    
+    if (!managerInfo) {
+      throw new Error("Manager not found");
+    }
+
+    return await TeamMember.getAvailableEmployees(managerId, managerInfo.department);
+  }
+
+  static async addTeamMember(managerId, employeeId) {
+    // Verify employee exists and is in the same department
+    const employee = await query(
+      `SELECT id, department FROM employees WHERE id = ? AND department IN 
+       (SELECT department FROM employees WHERE id = ?)`,
+      [employeeId, managerId],
+    );
+
+    if (!employee || employee.length === 0) {
+      throw new Error("Employee not found in the same department");
+    }
+
+    return await TeamMember.addTeamMember(managerId, employeeId);
+  }
+
+  static async removeTeamMember(managerId, employeeId) {
+    return await TeamMember.removeTeamMember(managerId, employeeId);
+  }
 }
 
 module.exports = ManagerService;
+

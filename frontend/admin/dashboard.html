@@ -292,9 +292,10 @@
                   <button
                     class="btn btn-success"
                     onclick="
-                      document.getElementById(
-                        'createManagerModal',
-                      ).style.display = 'block'
+                      const form = document.getElementById('managerForm');
+                      form.reset();
+                      document.getElementById('managerCode').value = '';
+                      document.getElementById('createManagerModal').style.display = 'block'
                     "
                   >
                     + Add Manager
