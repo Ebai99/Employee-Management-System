@@ -93,7 +93,26 @@ class TaskController {
     }
   }
 
-  // EMPLOYEE
+  // EMPLOYEE - Get assigned tasks
+  static async getEmployeeTasks(req, res, next) {
+    try {
+      const employeeId = req.user.id;
+      if (!employeeId) {
+        const err = new Error("Employee ID not found in token");
+        err.statusCode = 401;
+        throw err;
+      }
+
+      const tasks = await Task.getTasksByEmployee(employeeId);
+      res.json({ success: true, data: tasks });
+    } catch (err) {
+      console.error("Error in getEmployeeTasks:", err);
+      err.statusCode = err.statusCode || 400;
+      next(err);
+    }
+  }
+
+  // EMPLOYEE - Start task
   static async start(req, res, next) {
     try {
       await TaskService.startTask(req.user.id, req.params.taskId);
@@ -104,6 +123,7 @@ class TaskController {
     }
   }
 
+  // EMPLOYEE - Complete task
   static async complete(req, res, next) {
     try {
       const { description } = req.body;

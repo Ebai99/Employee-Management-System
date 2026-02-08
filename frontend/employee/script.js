@@ -118,7 +118,10 @@ async function handleClockIn() {
     attendanceData = response.data || {};
     const clockInTime = new Date().toISOString();
     localStorage.setItem("clockInTime", clockInTime);
-    
+    await loadAttendanceStatus();
+    notifySuccess("Clocked in successfully!");
+  } catch (error) {
+    hideLoader();
     notifyError("Error clocking in");
     console.error(error);
   }
@@ -138,7 +141,10 @@ async function handleClockOut() {
 
     attendanceData = {};
     localStorage.removeItem("clockInTime");
-    
+    await loadAttendanceStatus();
+    notifySuccess("Clocked out successfully!");
+  } catch (error) {
+    hideLoader();
     notifyError("Error clocking out");
     console.error(error);
   }
@@ -178,6 +184,10 @@ async function startBreak() {
     if (breakStatus) breakStatus.textContent = "On Break";
     
     localStorage.setItem("breakStartTime", new Date().toISOString());
+    notifySuccess("Break started!");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error starting break");
     console.error(error);
   }
 }
@@ -198,6 +208,10 @@ async function endBreak() {
     if (breakStatus) breakStatus.textContent = "Working";
     
     localStorage.removeItem("breakStartTime");
+    notifySuccess("Break ended!");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error ending break");
     console.error(error);
   }
 }
@@ -238,47 +252,141 @@ async function loadBreakHistory() {
 
 async function loadMyTasks(filter = "all") {
   try {
-    const response = await apiRequest(`/tasks?filter=${filter}`);
+    const response = await apiRequest("/tasks/employee/assigned");
+    console.log("Tasks API Response:", response);
+
+    if (!response.success) {
+      console.error("Failed to load tasks:", response.message);
+      tasksData = [];
+      renderTasks();
+      return;
+    }
 
     tasksData = response.data || [];
-    renderTasks();
+    console.log("Tasks loaded:", tasksData);
+    
+    // Filter tasks based on status
+    let filteredTasks = tasksData;
+    if (filter === "pending") {
+      filteredTasks = tasksData.filter(t => t.status === "pending");
+    } else if (filter === "active") {
+      filteredTasks = tasksData.filter(t => t.status === "active");
+    } else if (filter === "completed") {
+      filteredTasks = tasksData.filter(t => t.status === "completed");
+    }
+    
+    console.log(`Filtered tasks (${filter}):`, filteredTasks);
+    renderTasks(filteredTasks);
   } catch (error) {
     console.error("Error loading tasks:", error);
+    tasksData = [];
+    renderTasks([]);
   }
 }
 
-function renderTasks() {
+function formatDateDisplay(date) {
+  if (!date) return "No deadline";
+  const d = new Date(date);
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${d.getDate()} ${month[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function getTaskStatusBadgeClass(status) {
+  switch ((status || "pending").toLowerCase()) {
+    case "completed":
+      return "success";
+    case "active":
+      return "active";
+    case "pending":
+      return "warning";
+    default:
+      return "secondary";
+  }
+}
+
+function getPriorityBadgeClass(priority) {
+  switch ((priority || "medium").toLowerCase()) {
+    case "high":
+      return "priority-high";
+    case "low":
+      return "priority-low";
+    default:
+      return "priority-medium";
+  }
+}
+
+function renderTasks(tasks = tasksData) {
   const container = document.getElementById("taskList");
   if (!container) return;
 
-  if (!tasksData || tasksData.length === 0) {
+  if (!tasks || tasks.length === 0) {
     container.innerHTML =
-      '<p class="text-center" style="color: #8b949e;">No tasks assigned</p>';
+      '<p class="text-center" style="color: #8b949e; padding: 20px;">No tasks assigned</p>';
     return;
   }
 
-  container.innerHTML = tasksData
+  container.innerHTML = tasks
     .map(
-      (task) => `
-    <div class="card" style="margin-bottom: 15px;">
-      <div class="card-header">
-        <div>
-          <strong>${task.title}</strong>
+      (task) => {
+        const priority = (task.priority || "medium").toLowerCase();
+        const status = (task.status || "pending").toLowerCase();
+        const borderColor = priority === 'high' ? 'ef4444' : priority === 'low' ? '22c55e' : 'f59e0b';
+        return `
+    <div class="card" style="margin-bottom: 12px; border-left: 4px solid #${borderColor};">
+      <div style="padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+          <div style="flex: 1;">
+            <strong style="font-size: 14px; color: #fff;">${task.title || 'Untitled Task'}</strong>
+            ${task.description ? `<p style="margin: 6px 0 0 0; font-size: 12px; color: #8b949e;">${task.description}</p>` : ""}
+          </div>
+          <span class="badge ${getPriorityBadgeClass(priority)}" style="margin-left: 10px; font-size: 11px;">${priority.toUpperCase()}</span>
         </div>
-        <span class="priority priority-${(task.priority || "medium").toLowerCase()}">
-          ${task.priority || "Medium"}
-        </span>
-      </div>
-      <div style="display: flex; justify-content: space-between; margin-top: 10px; align-items: center;">
-        <div style="font-size: 12px; color: #8b949e;">
-          Due: ${formatDate(task.due_date, "DD MMM YYYY")}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div>
+            <p style="margin: 0; font-size: 12px; color: #8b949e;">
+              Assigned by: <strong>${task.firstname || ''} ${task.lastname || ''}</strong>
+            </p>
+            <p style="margin: 5px 0 0 0; font-size: 12px; color: #8b949e;">
+              Due: <strong>${formatDateDisplay(task.deadline)}</strong>
+            </p>
+          </div>
+          <span class="badge ${getTaskStatusBadgeClass(status)}" style="font-size: 11px;">${status.toUpperCase()}</span>
         </div>
-        <button class="btn btn-success" onclick="completeTask(${task.task_id})" style="padding: 6px 12px; font-size: 12px;">Complete</button>
+        <div style="display: flex; gap: 6px;">
+          ${status !== 'completed' ? `
+            ${status !== 'active' ? `<button class="btn btn-primary" onclick="startTask(${task.id})" style="padding: 6px 10px; font-size: 11px;">Start</button>` : ""}
+            <button class="btn btn-success" onclick="completeTask(${task.id})" style="padding: 6px 10px; font-size: 11px;">Complete</button>
+          ` : `
+            <span style="font-size: 12px; color: #22c55e;">✓ Completed</span>
+          `}
+        </div>
       </div>
     </div>
-  `,
+  `;
+      }
     )
     .join("");
+}
+
+async function startTask(taskId) {
+  try {
+    showLoader("Starting task...");
+
+    const response = await apiRequest(`/tasks/${taskId}/start`, "POST");
+    hideLoader();
+
+    if (!response.success) {
+      notifyError(response.message || "Failed to start task");
+      return;
+    }
+
+    await loadMyTasks();
+    notifySuccess("Task started!");
+  } catch (error) {
+    hideLoader();
+    notifyError("Error starting task");
+    console.error(error);
+  }
 }
 
 async function completeTask(taskId) {
@@ -292,7 +400,7 @@ async function completeTask(taskId) {
     showLoader("Completing task...");
 
     const response = await apiRequest(
-      `/employee/tasks/${taskId}/complete`,
+      `/tasks/${taskId}/complete`,
       "POST",
     );
     hideLoader();

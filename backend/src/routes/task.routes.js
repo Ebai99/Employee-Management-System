@@ -46,13 +46,23 @@ router.delete(
   (req, res, next) => TaskController.deleteTask(req, res, next),
 );
 
-// Employee
+// Employee - Get assigned tasks
+router.get(
+  "/employee/assigned",
+  auth,
+  authorize(roles.EMPLOYEE),
+  (req, res, next) => TaskController.getEmployeeTasks(req, res, next),
+);
+
+// Employee - Start task
 router.post(
   "/:taskId/start",
   auth,
   authorize(roles.EMPLOYEE),
   (req, res, next) => TaskController.start(req, res, next),
 );
+
+// Employee - Complete task
 router.post(
   "/:taskId/complete",
   auth,

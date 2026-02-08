@@ -204,7 +204,16 @@
           <div class="bottom-section">
             <div class="tasks-section">
               <h3>My Tasks</h3>
-              <p class="subtitle">Current assignments</p>
+              <p class="subtitle">Tasks assigned by your manager</p>
+              
+              <!-- Filter Buttons -->
+              <div style="display: flex; gap: 8px; margin: 15px 0;">
+                <button class="btn btn-primary" onclick="loadMyTasks('all'); this.parentElement.querySelectorAll('button').forEach(b => b.style.opacity = '0.5'); this.style.opacity = '1';" style="opacity: 1; font-size: 12px;">All Tasks</button>
+                <button class="btn btn-secondary" onclick="loadMyTasks('pending'); this.parentElement.querySelectorAll('button').forEach(b => b.style.opacity = '0.5'); this.style.opacity = '1';" style="opacity: 0.5; font-size: 12px;">Pending</button>
+                <button class="btn btn-secondary" onclick="loadMyTasks('active'); this.parentElement.querySelectorAll('button').forEach(b => b.style.opacity = '0.5'); this.style.opacity = '1';" style="opacity: 0.5; font-size: 12px;">Active</button>
+                <button class="btn btn-secondary" onclick="loadMyTasks('completed'); this.parentElement.querySelectorAll('button').forEach(b => b.style.opacity = '0.5'); this.style.opacity = '1';" style="opacity: 0.5; font-size: 12px;">Completed</button>
+              </div>
+              
               <div class="task-list" id="taskList"></div>
             </div>
 
